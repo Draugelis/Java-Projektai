@@ -10,24 +10,30 @@ public class Kambarys extends Thread{
 	DateFormat datosForma = new SimpleDateFormat("HH:mm:ss");
 	
 	private Vector<String> zinuciuEile = new Vector<String>();
-	private Vector<KlientoDuomenys> klientai = new Vector<KlientoDuomenys>();
+	private Vector<ServerioKlientas> klientai = new Vector<ServerioKlientas>();
 	private String kambarioVardas;
+	private String kambarioPradinëZinute;
 
-	public synchronized void pridekKlienta(KlientoDuomenys kd){
-		klientai.add(kd);
+	public synchronized void pridekKlienta(ServerioKlientas sk){
+		klientai.add(sk);
+		sk.siuskZinute(kambarioPradinëZinute);
 		siuskKlientuSarasa();
+	}
+	public synchronized void nustatykPradineZinute(String zinute){
+		this.kambarioPradinëZinute = zinute;
 	}
 	public synchronized void nustatykVarda(String vardas){
 		this.kambarioVardas = vardas;
 	}
-	public synchronized String gaukVarda(){
+	public String gaukVarda(){
 		return kambarioVardas;
 	}
 	
-	public synchronized void pasalinkKlienta(KlientoDuomenys kd, boolean isspirtas){
-		int klientoIndeksas = klientai.indexOf(kd);
+	public synchronized void pasalinkKlienta(ServerioKlientas sk, boolean isspirtas){
+		int klientoIndeksas = klientai.indexOf(sk);
 		if(klientoIndeksas != -1){
-			String klientoVardas = kd.gaukVarda();
+			String klientoVardas = sk.gaukVarda();
+			klientai.get(klientoIndeksas).atsijunk();
 			klientai.removeElementAt(klientoIndeksas);
 			if(!klientoVardas.isEmpty()){
 				if(isspirtas)
@@ -39,19 +45,10 @@ public class Kambarys extends Thread{
 		}
 		
 	}
-	public synchronized void apdorokZinute(KlientoDuomenys kd, String zinute){
-		if(zinute.startsWith("/PS/")){ //Prisijunge svecias.
-			String vardas = zinute.substring(4);
-			System.out.println("Prijungiamas vartotojas " + vardas +  ", jam bus iðsiøstas patvirtinimas");
-			kd.nustatykVarda(vardas);
-			String atsakymas = "/PS/" + vardas;
-			kd.klientoSiuntejas.siuskZinute(atsakymas);
-			siuskZinuteVisiems(suformuokZinute(vardas + " prisijungë", ""));
-		} else {
-			zinute = suformuokZinute(zinute, kd.gaukVarda());
-			zinuciuEile.add(zinute);
-			notify();
-		}
+	public synchronized void apdorokZinute(ServerioKlientas sk, String zinute){
+		zinute = suformuokZinute(zinute, sk.gaukVarda());
+		zinuciuEile.add(zinute);
+		notify();
 	}
 	private synchronized String gaukSekanciaZinute()
 	throws InterruptedException
@@ -84,8 +81,8 @@ public class Kambarys extends Thread{
 	private synchronized void siuskZinuteVisiems(String zinute)
     {
         for (int i=0; i<klientai.size(); i++) {
-           KlientoDuomenys kd = (KlientoDuomenys) klientai.get(i);
-           kd.klientoSiuntejas.siuskZinute(zinute);
+        	ServerioKlientas sk = (ServerioKlientas) klientai.get(i);
+        	sk.siuskZinute(zinute);
         }
     }
 	private String suformuokZinute(String tekstas, String vardas){

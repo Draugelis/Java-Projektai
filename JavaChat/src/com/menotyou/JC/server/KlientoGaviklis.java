@@ -34,9 +34,16 @@ public class KlientoGaviklis extends Thread {
 		serveris.pasalinkKlienta(kD);
 	}
 	private void pirminisApdorojimas(KlientoDuomenys kD, String zinute){
-		String kambarys = zinute.split("/K/|/Z/")[0];
-		zinute = "/Z/" + zinute.split("/Z/")[1];
-		serveris.gaukKambari(kambarys).apdorokZinute(kD, zinute);
+		if(zinute.startsWith("/K/")){
+			String kambarys = zinute.split("/K/|/Z/")[0];
+			zinute = "/Z/" + zinute.split("/Z/")[1];
+			Kambarys k = serveris.gaukKambari(kambarys);
+			if(k != null) k.apdorokZinute(kD, zinute);
+		} else if(zinute.startsWith("/NK/")){
+			String kambarys = zinute.split("/NK/|/Z/")[0];
+			zinute = zinute.split("/Z/")[1];
+			serveris.sukurkKambari(kambarys, kD, zinute);
+		}
 	}
 	
 	

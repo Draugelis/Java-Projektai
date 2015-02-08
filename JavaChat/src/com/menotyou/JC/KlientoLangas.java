@@ -46,9 +46,6 @@ public class KlientoLangas extends JFrame {
 	private JMenu mnNustatymai;
 	private JMenuItem mntmTekstoNustatymai;
 	private JMenuItem mntmVartotojoNustatymai;
-	private JMenu mnKambariai;
-	private JMenuItem mntmPridtiKambari;
-	private JMenuItem mntmPaalintiKambar;
 
 	public KlientoLangas(String vardas, Klientas klientas) {
 		setTitle("JC klientas");
@@ -105,14 +102,6 @@ public class KlientoLangas extends JFrame {
 		mntmVartotojoNustatymai = new JMenuItem("Vartotojo nustatymai");
 		mnNustatymai.add(mntmVartotojoNustatymai);
 		
-		mnKambariai = new JMenu("Kambariai");
-		menuBar.add(mnKambariai);
-		
-		mntmPridtiKambari = new JMenuItem("Prid\u0117ti kambar\u012F");
-		mnKambariai.add(mntmPridtiKambari);
-		
-		mntmPaalintiKambar = new JMenuItem("Pa\u0161alinti kambar\u012F");
-		mnKambariai.add(mntmPaalintiKambar);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -179,6 +168,9 @@ public class KlientoLangas extends JFrame {
 		setVisible(true);
 
 		zinutesLaukelis.requestFocusInWindow();
+	}
+	private JPanel sukurkKambarioInterfeisa(String pavadinimas, ){
+		
 	}
 	public void papildykIstorija(String zinute){
 		Istorija.append(zinute + "\n");
