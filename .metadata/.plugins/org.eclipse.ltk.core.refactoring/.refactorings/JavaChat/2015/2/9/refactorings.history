@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;gbc_textArea&apos; in &apos;com.menotyou.JC.KambarioInterfeisas.KambarioInterfeisas(...)&apos; to &apos;gbc_langelis&apos;&#x0D;&#x0A;- Original project: &apos;JavaChat&apos;&#x0D;&#x0A;- Original element: &apos;com.menotyou.JC.KambarioInterfeisas.KambarioInterfeisas(JTabbedPane, Klientas, String).gbc_textArea&apos;&#x0D;&#x0A;- Renamed element: &apos;gbc_textArea&apos;&#x0D;&#x0A;- Update references to refactored element" description="Rename local variable &apos;gbc_textArea&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/src&lt;com.menotyou.JC{KambarioInterfeisas.java[KambarioInterfeisas~KambarioInterfeisas~QJTabbedPane;~QKlientas;~QString;@gbc_textArea!1788!1846!1807!1818!QGridBagConstraints;!0!false" name="gbc_langelis" references="true" stamp="1424705151271" version="1.0"/>
+</session>

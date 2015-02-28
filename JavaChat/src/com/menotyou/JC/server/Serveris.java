@@ -13,21 +13,15 @@
 
 package com.menotyou.JC.server;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Properties;
 
 public class Serveris {
 	
-	private final int MAX_BANDYMU = 3;
 	private final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 	private int port;
 	private boolean running = false;
@@ -38,14 +32,14 @@ public class Serveris {
 	public Serveris(int port){
 		this.port = port;
 		try {
-			Properties nustatymai = new Properties();
-			FileInputStream in = new FileInputStream(new File(".my.cnf"));
-			nustatymai.load(in);
-			con = DriverManager.getConnection(
-					"jdbc:mysql://shared.fln.lt/tvalasinas",
-					nustatymai.getProperty("user"),
-					nustatymai.getProperty("password"));
-			in.close();
+			//Properties nustatymai = new Properties();
+			//FileInputStream in = new FileInputStream(new File(".my.cnf"));
+			//nustatymai.load(in);
+			//con = DriverManager.getConnection(
+			//		"jdbc:mysql://shared.fln.lt/tvalasinas",
+			//		nustatymai.getProperty("user"),
+			//		nustatymai.getProperty("password"));
+			//in.close();
 			ServerioPrisijungimas = new ServerSocket(port);
 			System.out.println("Serveris paleistas per " + port + " porta");
 			running = true;
@@ -53,11 +47,11 @@ public class Serveris {
 			System.out.println("Nepavyko paleisti serverio per " + port + " portà");
 			e.printStackTrace();
 			return;
-		} catch (SQLException e) {
+		}/* catch (SQLException e) {
 			System.out.println("Nepavyko prisijungti prie duomenø bazës");
 			e.printStackTrace();
-		} 
-		Kambarys PagrindinisKamb = new Kambarys();
+		} */
+		Kambarys PagrindinisKamb = new Kambarys("Sveiki atvyke á JC!!");
 		PagrindinisKamb.nustatykVarda("Pagrindinis");
 		PagrindinisKamb.start();
 		kambariai.add(PagrindinisKamb);
@@ -71,7 +65,7 @@ public class Serveris {
                if(naujasKlientas.Prisijungimas()){
             	   PagrindinisKamb.pridekKlienta(naujasKlientas);
             	   naujasKlientas.start();
-               }
+               } 
            } catch (IOException ioe) {
                ioe.printStackTrace();
            }
@@ -81,16 +75,15 @@ public class Serveris {
 		return con;
 	}
 	public synchronized void sukurkKambari(String vardas, ServerioKlientas sk, String zinute){
-		Kambarys naujasKambarys = new Kambarys();
+		Kambarys naujasKambarys = new Kambarys(zinute);
 		naujasKambarys.nustatykVarda(vardas);
-		naujasKambarys.nustatykPradineZinute(zinute);
 		naujasKambarys.start();
 		naujasKambarys.pridekKlienta(sk);
 		kambariai.add(naujasKambarys);
 	}
-	public synchronized void pasalinkKlienta(ServerioKlientas sk){
+	public synchronized void pasalinkKlienta(ServerioKlientas sk, boolean isspirtas, boolean pranesti){
 		for(int i = 0; i < kambariai.size(); i++)
-			kambariai.get(i).pasalinkKlienta(sk, false);
+			kambariai.get(i).pasalinkKlienta(sk, isspirtas, pranesti);
 	}
 	public synchronized Kambarys gaukKambari(String kambarys){
 		for(int i = 0; i < kambariai.size(); i++)

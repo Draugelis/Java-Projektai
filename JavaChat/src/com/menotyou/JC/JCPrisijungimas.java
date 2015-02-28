@@ -28,21 +28,9 @@ public class JCPrisijungimas extends JFrame {
 	private int SERVERIO_PORTAS = 8192;
 	private BufferedReader skaityti;
 	private PrintWriter rasyti;
-	private Klientas klientas;
 
 	public JCPrisijungimas() {
 		sukurkLanga();
-		try{
-			Socket prieiga = new Socket(SERVERIO_PAVADINIMAS, SERVERIO_PORTAS);
-			klientas = new Klientas(prieiga);
-			klientas.gavejas = new Gavejas(klientas);
-			klientas.siuntejas = new Siuntejas(klientas);
-			klientas.gavejas.start();
-			klientas.siuntejas.start();
-			System.out.println("Prisjungta prie serverio " + SERVERIO_PAVADINIMAS + ":" + SERVERIO_PORTAS);
-		} catch(IOException ioe) {
-			System.out.println("Nepavyko susisiekti su serveriu!");
-		}
 	}
 	public void sukurkLanga(){
 		try {
@@ -65,7 +53,7 @@ public class JCPrisijungimas extends JFrame {
 				login();
 			}
 		});
-		btnVartotjas.setBounds(43, 223, 205, 30);
+		btnVartotjas.setBounds(43, 178, 205, 30);
 		contentPane.add(btnVartotjas);
 		
 		JButton btnSvecias = new JButton("Sve\u010Dias, nesiregistruosiu");
@@ -83,30 +71,6 @@ public class JCPrisijungimas extends JFrame {
 		lblNewLabel.setBounds(0, 11, 294, 112);
 		contentPane.add(lblNewLabel);
 		
-		JButton btnNewButton = new JButton("Sve\u010Dias, bet noriu u\u017Esiregistruoti");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				registracija();
-			}
-		});
-		btnNewButton.setBounds(43, 178, 205, 33);
-		contentPane.add(btnNewButton);
-	}
-	private boolean susisiekSuServeriu(){
-		try{
-			Socket prieiga = new Socket(SERVERIO_PAVADINIMAS, SERVERIO_PORTAS);
-			klientas = new Klientas(prieiga);
-			klientas.gavejas = new Gavejas(klientas);
-			klientas.siuntejas = new Siuntejas(klientas);
-			klientas.gavejas.start();
-			klientas.siuntejas.start();
-			System.out.println("Prisjungta prie serverio " + SERVERIO_PAVADINIMAS + ":" + SERVERIO_PORTAS);
-			return true;
-		} catch(IOException ioe) {
-			System.out.println("Nepavyko susisiekti su serveriu!");
-			return false;
-		}
-		
 	}
 
 
@@ -114,33 +78,12 @@ public class JCPrisijungimas extends JFrame {
 		dispose();
 		//Todo: Login veiksmas
 	}
-	public void registracija(){
-		dispose();
-		new Registracija();
-	}
 	
 	public void svecias(){
-		boolean pavyko = susisiekSuServeriu();
-		if(pavyko){
-			dispose();
-			new SvecioPrisijungimas(klientas);
-		} else {
-			JOptionPane.showMessageDialog(null, "Nepavyko susisiekti su serveriu", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
-		}
+		dispose();
 		
 	}
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					JCPrisijungimas frame = new JCPrisijungimas();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	
 
 	
 }

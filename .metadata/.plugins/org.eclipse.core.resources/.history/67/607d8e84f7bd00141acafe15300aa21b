@@ -1,0 +1,103 @@
+package com.menotyou.JC;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+public class Klientas extends Thread{
+	private String vardas = "";
+	private Socket klientoPrieiga;
+	private PrintWriter rasymas;
+	private BufferedReader skaitymas;
+	private Map<String, KambarioInterfeisas> kambariai = new ConcurrentHashMap<String, KambarioInterfeisas>();
+	private List<String> zinuciuEile = new ArrayList<String>();
+	
+
+	public Klientas(String vardas) throws IOException, NullPointerException{
+		this.vardas = vardas;
+		klientoPrieiga = new Socket("localhost", 8192);
+		skaitymas = new BufferedReader(new InputStreamReader(klientoPrieiga.getInputStream()));
+		rasymas = new PrintWriter(new OutputStreamWriter(klientoPrieiga.getOutputStream()), true);
+		rasymas.println("/NV/" + vardas);
+	}
+	
+	public void run(){
+		try{
+			while (!isInterrupted()) {
+				if(!skaitymas.ready()){
+					if(zinuciuEile.size() > 0){
+						System.out.println("Klientas " + vardas + " siuncia zinute: "  + zinuciuEile.get(0));
+						rasymas.println(zinuciuEile.remove(0));
+					}
+				} else{
+					String zinute = skaitymas.readLine();
+					priimkZinute(zinute);
+					
+				}
+			}
+		} catch (IOException e) {
+			System.out.println("Kilo problema su IO");
+			e.printStackTrace();
+		}
+		
+			
+	}
+	public void pridekKambari(String pavadinimas, KambarioInterfeisas k){
+		kambariai.put(pavadinimas, k);
+	}
+	public void pasalinkKambari(String pavadinimas){
+		kambariai.remove(pavadinimas);
+	}
+
+	public Socket gaukKlientoPrieiga() {
+		return klientoPrieiga;
+	}
+	public void siusk(String zinute){
+		zinuciuEile.add(zinute);
+		/*if(zinute.startsWith("/K/")){
+			zinute = zinute.substring(3);
+			synchronized(kambariai){
+				String kambarys = zinute.split("/Z/")[0];
+				KambarioInterfeisas k = kambariai.get(kambarys);
+				if(k != null){
+					k.spausdintiTeksta(zinute.split("/Z/")[1]);
+				} else{
+					System.out.println("Kambarys su pavadinimu " + kambarys + " neegzistuoja");
+				}
+			}
+		}*/
+	}
+		
+	public void priimkZinute(String zinute){
+		System.out.println("Klientas gavo zinute: " + zinute);
+		if(zinute.startsWith("/K/")){
+			zinute = zinute.substring(3);
+			synchronized(kambariai){
+				String kambarys = zinute.split("/Z/")[0];
+				KambarioInterfeisas k = kambariai.get(kambarys);
+				if(k != null){
+					k.spausdintiTeksta(zinute.split("/Z/")[1]);
+				} else{
+					System.out.println("Kambarys su pavadinimu " + kambarys + " neegzistuoja");
+				}
+			}
+		}
+	}
+
+	public void atsijunk() {
+		try{
+			rasymas.println("QUIT");
+			klientoPrieiga.close();
+		} catch(IOException e){}
+	}
+}

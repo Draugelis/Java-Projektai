@@ -1,0 +1,104 @@
+package com.menotyou.JC;
+
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+public class KambarioInterfeisas extends JPanel {
+	private final JTabbedPane jtp;
+	private String pavadinimas;
+	private Klientas klientas;
+	private JButton mygtukasSiusti;
+	private Caret caret;
+	private JTextField zinutesLaukelis;
+	private JTextArea Istorija;
+	private JPopupMenu issokantisLangelis;
+	private List<String> prisijungeVartotojai = new ArrayList<String>();
+	
+	public KambarioInterfeisas(final JTabbedPane jtp, Klientas klientas, String pavadinimas) {
+		if (jtp == null) {
+	        throw new NullPointerException("TabbedPane is null");
+	    }
+		this.jtp = jtp;
+		this.klientas = klientas;
+		this.pavadinimas = pavadinimas;
+		setSize(700, 450);
+		GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.columnWidths = new int[] {680, 10, 10};
+		gridBagLayout.rowHeights = new int[] {430, 20};
+		setLayout(gridBagLayout);
+		
+		issokantisLangelis = new JPopupMenu();
+		
+		
+		Istorija = new JTextArea();
+		Istorija.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+		Istorija.setEditable(false);
+		Istorija.setAutoscrolls(true);
+		caret = (DefaultCaret) Istorija.getCaret();
+		((DefaultCaret) caret).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		GridBagConstraints gbc_textArea = new GridBagConstraints();
+		gbc_textArea.gridwidth = 3;
+		gbc_textArea.insets = new Insets(7, 0, 0, 5);
+		gbc_textArea.fill = GridBagConstraints.BOTH;
+		gbc_textArea.gridx = 0;
+		gbc_textArea.gridy = 0;
+		add(Istorija, gbc_textArea);
+		
+		zinutesLaukelis = new JTextField();
+		GridBagConstraints gbc_textField = new GridBagConstraints();
+		gbc_textField.insets = new Insets(0, 0, 0, 0);
+		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textField.gridx = 0;
+		gbc_textField.gridy = 1;
+		add(zinutesLaukelis, gbc_textField);
+		zinutesLaukelis.setColumns(10);
+		
+		mygtukasSiusti = new JButton("Siøsti");
+		mygtukasSiusti.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				siustiZinute();
+			}
+		});
+		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.gridwidth = 2;
+		gbc_btnNewButton.insets = new Insets(0, 5, 0, 0);
+		gbc_btnNewButton.gridx = 1;
+		gbc_btnNewButton.gridy = 1;
+		add(mygtukasSiusti, gbc_btnNewButton);
+		
+	}
+	
+	public void nustatykPrisijungusiusVartotojus(String [] vartotojai){
+		prisijungeVartotojai = new ArrayList<String>(vartotojai.length);
+		prisijungeVartotojai.clear();
+		for(int i =0; i < vartotojai.length; i++){
+			prisijungeVartotojai.add(vartotojai[i]);
+		}
+	}
+	public void spausdintiTeksta(String eilute){
+		Istorija.append(eilute + "\n");
+	}
+
+	private void siustiZinute(){
+		String zinute = "/K/"+ pavadinimas + "/Z/" +  zinutesLaukelis.getText();
+		System.out.println(pavadinimas + " siuncia zinute: " + zinute);
+		zinutesLaukelis.setText("");
+		klientas.siusk(zinute);
+	}
+
+}

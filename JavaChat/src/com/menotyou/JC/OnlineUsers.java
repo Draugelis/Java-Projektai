@@ -1,4 +1,4 @@
-package com.menotyou.Chat;
+package com.menotyou.JC;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;

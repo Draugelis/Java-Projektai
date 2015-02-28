@@ -1,58 +1,94 @@
 package com.menotyou.JC;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class Klientas{
-	private boolean prisijunges = false;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+public class Klientas extends Thread{
 	private String vardas = "";
-	private String kambarioPavadinimas = "";
-	private String[] prisijungusiuVartotojuSarasas;
-	private KlientoLangas klientoLangas;
-	private Socket klientoPrieiga = null;
+	private Socket klientoPrieiga;
+	private PrintWriter rasymas;
+	private BufferedReader skaitymas;
+	private Map<String, KambarioInterfeisas> kambariai = new ConcurrentHashMap<String, KambarioInterfeisas>();
+	private List<String> zinuciuEile = new ArrayList<String>();
 	
-	
-   	public Gavejas gavejas = null;
-   	public Siuntejas siuntejas = null;
 
-	public Klientas(Socket s) {
-		klientoPrieiga = s;
+	public Klientas(String vardas) throws IOException, NullPointerException{
+		this.vardas = vardas;
+		klientoPrieiga = new Socket("localhost", 8192);
+		skaitymas = new BufferedReader(new InputStreamReader(klientoPrieiga.getInputStream()));
+		rasymas = new PrintWriter(new OutputStreamWriter(klientoPrieiga.getOutputStream()), true);
+		rasymas.println("/NV/" + vardas);
 	}
 	
-	public void susiekSuKlientu(KlientoLangas kl){
-		klientoLangas = kl;
+	public void run(){
+		try{
+			System.out.println("Paleidziamas klientas " + vardas);
+			while (!isInterrupted()) {
+				if(skaitymas.ready()){
+					String zinute = skaitymas.readLine();
+					System.out.println("Gauta zinute: " + zinute);
+					priimkZinute(zinute);
+				}
+				if(zinuciuEile.size() > 0){
+					System.out.println("Zinute " + zinuciuEile.get(0));
+					rasymas.println(zinuciuEile.remove(0));
+					System.out.println("Zinute issiusta!");
+				}
+			}
+		} catch (IOException e) {
+			System.out.println("Kilo problema su IO");
+			e.printStackTrace();
+		}
+		
+			
+	}
+	public boolean pridekKambari(String pavadinimas, KambarioInterfeisas k){
+		if(kambariai.containsKey(pavadinimas))
+			return false;
+		kambariai.put(pavadinimas, k);
+		return true;
+	}
+	public void pasalinkKambari(String pavadinimas){
+		kambariai.remove(pavadinimas);
 	}
 
 	public Socket gaukKlientoPrieiga() {
 		return klientoPrieiga;
 	}
-	public String[] gaukVartotojuSarasa(){
-		return prisijungusiuVartotojuSarasas;
+	public void siusk(String zinute){
+		rasymas.println(zinute);
 	}
 		
 	public void priimkZinute(String zinute){
-		if(zinute.startsWith("/Z/") && prisijunges){
+		System.out.println("Klientas gavo zinute: " + zinute);
+		if(zinute.startsWith("/K/")){
 			zinute = zinute.substring(3);
-			zinute = zinute.split("/p/")[0];
-			klientoLangas.papildykIstorija(zinute);
-		} else if(zinute.startsWith("/VS/")){
-			System.out.println("Gautas vartotoju sarasas");
-			if(zinute.startsWith("/VS//p/")){
-				prisijungusiuVartotojuSarasas = null;
-			} else {
-				prisijungusiuVartotojuSarasas = zinute.split("/VS/|/k/|/p/");
+			synchronized(kambariai){
+				String kambarys = zinute.split("/Z/")[0];
+				KambarioInterfeisas k = kambariai.get(kambarys);
+				if(k != null){
+					k.spausdintiTeksta(zinute.split("/Z/")[1]);
+				} else{
+					System.out.println("Kambarys su pavadinimu " + kambarys + " neegzistuoja");
+				}
 			}
-		} else if(zinute.startsWith("/PS/")){
-			System.out.println("This it team leader! Contact established! Get ready to engage!");
-			vardas = zinute.split("/PS/|/p/")[1];
-			prisijunges = true;
 		}
 	}
 
 	public void atsijunk() {
 		try{
-			gavejas.interrupt();
-			siuntejas.interrupt();
 			klientoPrieiga.close();
-		} catch(Exception e){}
+		} catch(IOException e){}
 	}
 }

@@ -1,0 +1,94 @@
+package com.menotyou.JC;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+
+import com.menotyou.JC.Klientas;
+import com.menotyou.JC.KlientoLangas;
+
+import java.awt.Color;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class SvecioPrisijungimas extends JFrame {
+
+	private JPanel contentPane;
+	private JTextField txtVardas;
+	private JButton btnPrisijungti;
+	private JLabel lblVardas;
+	private Socket prieiga;
+
+	
+	public SvecioPrisijungimas() {
+		sukurkLanga();
+	}
+	
+	public void sukurkLanga(){
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		setTitle("Prisijungimas");
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(320, 360);
+		setLocationRelativeTo(null);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		txtVardas = new JTextField();
+		txtVardas.setBackground(new Color(255, 255, 255));
+		txtVardas.setBounds(87, 143, 111, 30);
+		contentPane.add(txtVardas);
+		txtVardas.setColumns(10);
+		
+		lblVardas = new JLabel("\u012Eveskite savo vard\u0105");
+		lblVardas.setBounds(87, 102, 102, 30);
+		contentPane.add(lblVardas);
+		
+		btnPrisijungti = new JButton("Prisijungti");
+		btnPrisijungti.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Prisijungimas();
+			}
+		});
+		btnPrisijungti.setBounds(98, 184, 89, 23);
+		contentPane.add(btnPrisijungti);
+		setVisible(true);
+	}
+	
+	public void Prisijungimas(){
+		Klientas klientas = null; 
+		try {
+			klientas = new Klientas(txtVardas.getText());
+			klientas.setDaemon(true);
+			klientas.start();
+		} catch (UnknownHostException e) {
+			JOptionPane.showMessageDialog(null, "Nepavyko rasti serverio!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+			e.printStackTrace();
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Netinkamas vartotojo vardas ar slaptazodis", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+			e.printStackTrace();
+		}
+		if(prieiga != null){
+			new KlientoLangas(txtVardas.getText(), klientas);
+			dispose();
+		} else{
+			JOptionPane.showMessageDialog(null, "Ið viso neprisijungta prie serverio, bet klaidø nebuvo!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
+	}
+}

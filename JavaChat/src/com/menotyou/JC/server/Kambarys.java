@@ -14,38 +14,45 @@ public class Kambarys extends Thread{
 	private String kambarioVardas;
 	private String kambarioPradinëZinute;
 
+	public Kambarys(String kambarioPradineZinute){
+		this.kambarioPradinëZinute = kambarioPradineZinute;
+	}
 	public synchronized void pridekKlienta(ServerioKlientas sk){
 		klientai.add(sk);
-		sk.siuskZinute(kambarioPradinëZinute);
-		siuskKlientuSarasa();
+		sk.siuskZinute(suformuokZinute(kambarioPradinëZinute, ""));
+		siuskZinuteVisiems(suformuokZinute(sk.gaukVarda() + " prisijunge prie pokalbio", ""));
+		//siuskKlientuSarasa();
 	}
 	public synchronized void nustatykPradineZinute(String zinute){
 		this.kambarioPradinëZinute = zinute;
 	}
 	public synchronized void nustatykVarda(String vardas){
 		this.kambarioVardas = vardas;
+		this.setName("Kambarys <" + kambarioVardas + ">");
 	}
 	public String gaukVarda(){
 		return kambarioVardas;
 	}
 	
-	public synchronized void pasalinkKlienta(ServerioKlientas sk, boolean isspirtas){
+	public synchronized void pasalinkKlienta(ServerioKlientas sk, boolean isspirtas, boolean pranesti){
 		int klientoIndeksas = klientai.indexOf(sk);
+		System.out.println("Salinamas klienas " + sk.gaukVarda() + " kambario " + kambarioVardas +  "-> kliento indeksas " + klientoIndeksas);
 		if(klientoIndeksas != -1){
 			String klientoVardas = sk.gaukVarda();
-			klientai.get(klientoIndeksas).atsijunk();
+			if(isspirtas) klientai.get(klientoIndeksas).atsijunk();
 			klientai.removeElementAt(klientoIndeksas);
-			if(!klientoVardas.isEmpty()){
+			if(!klientoVardas.isEmpty() && pranesti){
 				if(isspirtas)
 					siuskZinuteVisiems(suformuokZinute(klientoVardas + " buvo pasalintas is pokalbio.", ""));
 				else
 					siuskZinuteVisiems(suformuokZinute(klientoVardas + " paliko pokalbá.", ""));
 			}
-			siuskKlientuSarasa();
+			//siuskKlientuSarasa();
 		}
 		
 	}
 	public synchronized void apdorokZinute(ServerioKlientas sk, String zinute){
+		System.out.println("Kambarys " + kambarioVardas + " gavo zinute - "+ zinute + "is vartotojo " + sk.gaukVarda());
 		zinute = suformuokZinute(zinute, sk.gaukVarda());
 		zinuciuEile.add(zinute);
 		notify();
@@ -90,7 +97,7 @@ public class Kambarys extends Thread{
 		String klientoInfo = "";
 		if(!vardas.isEmpty())
 			klientoInfo = vardas + ": ";
-		String zinute = "/V/" + this.kambarioVardas + "/Z/[" + datosForma.format(data) + "] " + klientoInfo + tekstas;
+		String zinute = "/K/" + this.kambarioVardas + "/Z/[" + datosForma.format(data) + "] " + klientoInfo + tekstas;
 		return zinute;
 	}
 	
@@ -98,6 +105,7 @@ public class Kambarys extends Thread{
 		try{
 			while(true) {
 				String zinute = gaukSekanciaZinute();
+				System.out.println("Kambarys " + kambarioVardas + " siuncia zinute visiems - " + zinute);
 				siuskZinuteVisiems(zinute);
 			}
 		} catch (InterruptedException ie){

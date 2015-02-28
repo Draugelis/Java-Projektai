@@ -1,0 +1,120 @@
+package com.menotyou.JC.server;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Vector;
+
+public class ServerioKlientas extends Thread {
+
+	private Socket prieiga;
+	private String vardas;
+	private Serveris serveris;
+	private PrintWriter rasymas;
+	private BufferedReader skaitymas;
+	private ArrayList<String> zinuciuEile = new ArrayList<String>();
+	private boolean prisijunges = false;
+
+	public ServerioKlientas(Socket prieiga, Serveris serveris) throws IOException {
+		this.prieiga = prieiga;
+		this.serveris = serveris;
+		rasymas = new PrintWriter(new OutputStreamWriter(prieiga.getOutputStream()));
+		skaitymas = new BufferedReader(new InputStreamReader(prieiga.getInputStream()));
+		prisijunges = true;
+	}
+
+	public boolean Prisijungimas() {
+		try {
+			String eilute = skaitymas.readLine();
+			if(eilute.startsWith("/NV/")){
+				vardas = eilute.substring(4);
+				System.out.println("Prisijunge naujas vartotojas: " + vardas);
+				this.setName("Klientas [" + vardas + "]");
+				return true;
+			} else{
+				System.out.println("Gauta netiketa zinute: " +  eilute + "\n Klientas atmestas");
+				atsijunk();
+				return false;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		/*try {
+			eilute = skaitymas.readLine();
+			String vardas = eilute.split("/V/|/S/|/p/")[0];
+			String slaptazodis = eilute.split("/V/|/S/|/p/")[1];
+			try {
+				if (VartotojoAutentifikacija.gaukVAValdikli().autentifikuokVartotoja(serveris.gaukDBprieiga(), slaptazodis, vardas)) {
+					
+					rasymas.println("OK");
+					this.vardas = vardas;
+					return true;
+				} else {
+					rasymas.println("Netinkamas vardas ar slaptaþodis!");
+				}
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
+	}
+
+	public void run() {
+		try {
+			while (!isInterrupted()) {
+				if(!skaitymas.ready() && zinuciuEile.size() > 0){
+					System.out.println("Zinute siunciama vartotojui" + vardas);
+					rasymas.println(zinuciuEile.remove(0));
+					System.out.println("Zinute issiusta!");
+				} else {
+					String zinute = skaitymas.readLine();
+					pirminisApdorojimas(zinute);
+				}
+			}
+		} catch (Exception e) {
+		}
+	}
+	public synchronized void siuskZinute(String zinute){
+		System.out.println("I kliento " + vardas + " zinuciu eile prideta zinute: " + zinute);
+		zinuciuEile.add(zinute); 
+	}
+	public String gaukVarda(){
+		return vardas;
+	}
+	
+	public synchronized void atsijunk(){
+		this.serveris.pasalinkKlienta(this);
+		if(!this.prieiga.isClosed()){
+			try {
+				this.prieiga.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	private void pirminisApdorojimas(String zinute){
+		if(zinute.startsWith("/K/")){
+			System.out.println("Serveris gavo zinute: " + zinute);
+			zinute = zinute.substring(3);
+			String kambarys = zinute.split("/Z/")[0];
+			System.out.println("Zinute skirta kambariui: " + kambarys);
+			zinute = zinute.split("/Z/")[1];
+			Kambarys k = serveris.gaukKambari(kambarys);
+			if(k != null)
+				k.apdorokZinute(this, zinute);
+			else
+				System.out.println("Deja kambarys pavadinimu " + kambarys + " nebuvo rastas.");
+		}
+	}
+
+}

@@ -16,19 +16,23 @@ import com.menotyou.JC.Klientas;
 import com.menotyou.JC.KlientoLangas;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class SvecioPrisijungimas extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField txtVardas;
 	private JButton btnPrisijungti;
-	private Klientas klientas;
 	private JLabel lblVardas;
+	private Socket prieiga;
+	private KlientoLangas kl;
 
 	
-	public SvecioPrisijungimas(Klientas k) {
+	public SvecioPrisijungimas(KlientoLangas kl) {
 		sukurkLanga();
-		klientas = k;
+		this.kl = kl;
 	}
 	
 	public void sukurkLanga(){
@@ -69,25 +73,13 @@ public class SvecioPrisijungimas extends JFrame {
 	}
 	
 	public void Prisijungimas(){
-		String[] vartotojuSarasas = klientas.gaukVartotojuSarasa();
-		String vartotojoVardas = txtVardas.getText();
-		System.out.println("Tikrinamas vartotojo vardas");
-		System.out.println("Vartotojo vardas: " + vartotojoVardas);
-		if(gerasVardas(vartotojoVardas, vartotojuSarasas)){
+		String vardas = txtVardas.getText();
+		if(kl.prisijungimas(vardas)){
 			dispose();
-			new KlientoLangas(vartotojoVardas, klientas);
-			klientas.siuntejas.siuskZinute("/PS/" + vartotojoVardas);
+			kl.setVisible(true);
 		} else {
-			JOptionPane.showMessageDialog(null, "Toks vardas jau naudojamas", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Nepavyko prisijungi, bandykite dar kartà!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
-	}
-	private boolean gerasVardas(String vardas, String[] visiVardai){
-		if(visiVardai == null) return true;
-		for(int i = 0; i < visiVardai.length; i++){
-			if(vardas == visiVardai[i])
-				return false;
-		}
-		return true;
 	}
 }
