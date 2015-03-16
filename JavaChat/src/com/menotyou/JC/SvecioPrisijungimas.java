@@ -1,5 +1,6 @@
 package com.menotyou.JC;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -12,22 +13,15 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
-import com.menotyou.JC.Klientas;
-import com.menotyou.JC.KlientoLangas;
-
-import java.awt.Color;
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
 public class SvecioPrisijungimas extends JFrame {
 
+	private static final long serialVersionUID = 8952323351211994022L;
 	private JPanel contentPane;
 	private JTextField txtVardas;
 	private JButton btnPrisijungti;
 	private JLabel lblVardas;
-	private Socket prieiga;
 	private KlientoLangas kl;
+	private int atsakymas;
 
 	
 	public SvecioPrisijungimas(KlientoLangas kl) {
@@ -71,15 +65,30 @@ public class SvecioPrisijungimas extends JFrame {
 		contentPane.add(btnPrisijungti);
 		setVisible(true);
 	}
+	public void nustatykAtsakyma(int reiksme){
+		atsakymas = reiksme;
+	}
 	
 	public void Prisijungimas(){
 		String vardas = txtVardas.getText();
-		if(kl.prisijungimas(vardas)){
+		atsakymas = 0;
+		NIOKlientas klientas = kl.gaukKlienta();
+		if(klientas != null) klientas.siuskZinute(vardas);
+		while(atsakymas == 0){
+			try{
+				Thread.sleep(100);
+			} catch (Exception e){
+				
+			}
+		}
+		if(atsakymas == 1){
 			dispose();
+			kl.sukurkKambarioInterfeisa("Pagrindinis");
 			kl.setVisible(true);
 		} else {
-			JOptionPane.showMessageDialog(null, "Nepavyko prisijungi, bandykite dar kartà!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Nepavyko prisijungi, bandykite dar kartï¿½!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
 		}
+		atsakymas = 0;
 		
 	}
 }

@@ -1,0 +1,24 @@
+Kliento siunciamos zinutes:
+	Zinutes serveriui:
+		<NK>KambarioPavadinimas
+		<NK>KambarioPavadinimas<KZ>KambarioPradineZinute
+		<K+>KambarioPavadinimas
+		<K->KambarioPavadinimas
+		<R>VartotojoVardas<P>UzhasuotasSlaptazodis
+		<Q>Vartotojas atsijunge "svariai"
+	Zinutes kambariui:
+		<K>KambarioPavadinimas<Z>ZinutesTekstas
+
+Serverio siunciamos zinutes:
+	Zinutes klientui:
+		<EK+>Tokio kambario nera
+		<ENK>Kambarys pavadinimu: kambarioPavadinimas, jau egzistuoja
+		<K+>KambarioPavadinimas
+		<ER>Netinkamas vardas ar slaptazodis
+		<R+>Vardas
+		<C>RandomBituSeka
+	Zinutes kambariui:
+		<K>kambarioPavadinimas<V>SiuntejoVardas<Z>ZinutesTekstas
+		<K>KambarioPavadinimas<VS>VartotojoVardas[0]<T>VartotojoVardas[1]<T>...<END>
+		<K>KambarioPavadinimas<V->VartotojoVardas
+		<K>KambarioPavadinimas<V+>VartotojoVardas

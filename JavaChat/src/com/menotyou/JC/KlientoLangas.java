@@ -7,19 +7,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.net.Socket;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.DefaultCaret;
+
+import com.menotyou.JC.NIOBiblioteka.NIOAptarnavimas;
 
 public class KlientoLangas extends JFrame {
 
@@ -27,13 +25,10 @@ public class KlientoLangas extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane jtp;
 	private JTextArea Istorija;
-	private DefaultCaret caret;
-	private Klientas klientas;
 	private SriftoPasirinkimas fc;
 	private Font pasirinktasSriftas;
 	private KambarioKurimas kk;
-	private String vardas;
-	private Socket prieiga;
+	private static NIOKlientas klientas;
 
 	private JMenuBar menuBar;
 	private JMenu mnFile;
@@ -67,7 +62,6 @@ public class KlientoLangas extends JFrame {
 		menuBar.add(mnFile);
 		addWindowListener(new WindowAdapter() {
 			   public void windowClosing(WindowEvent evt) {
-				   klientas.atsijunk();
 			   }
 		});
 
@@ -113,16 +107,6 @@ public class KlientoLangas extends JFrame {
 		
 		jtp = new JTabbedPane();
 		jtp.setBorder(new EmptyBorder(5, 5, 5, 5));
-		/*try {
-			klientas = new Klientas(vardas, prieiga);
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Iðkilo klaida kuriant klientà!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
-			e.printStackTrace();
-		} catch(NullPointerException e){
-			JOptionPane.showMessageDialog(null, "Klientas susidure su NullPointerException", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
-			e.printStackTrace();
-		}
-		klientas.start();*/
 		
 		setContentPane(jtp);
 
@@ -133,21 +117,8 @@ public class KlientoLangas extends JFrame {
 		if(klientas.pridekKambari(pavadinimas, k))
 			jtp.addTab(pavadinimas, k);
 	}
-	public boolean prisijungimas(String vardas){
-		try {
-			klientas = new Klientas(vardas);
-			sukurkKambarioInterfeisa("Pagrindinis");
-			klientas.setDaemon(true);
-			klientas.start();
-		} catch (NullPointerException | IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-		this.setTitle("JC klientas - " + vardas);
-		return true;
-	}
-	public void papildykIstorija(String zinute){
-		Istorija.append(zinute + "\n");
+	public NIOKlientas gaukKlienta(){
+		return klientas;
 	}
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -157,6 +128,8 @@ public class KlientoLangas extends JFrame {
 					frame.setVisible(false);
 					SvecioPrisijungimas svecias = new SvecioPrisijungimas(frame);
 					svecias.setVisible(true);
+					klientas = new NIOKlientas(frame, svecias);
+					klientas.start();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

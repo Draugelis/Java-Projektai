@@ -6,7 +6,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -21,9 +23,10 @@ import javax.swing.text.DefaultCaret;
 
 public class KambarioInterfeisas extends JPanel {
 	private static final long serialVersionUID = 1L;
+	private static final SimpleDateFormat DATOS_FORMA = new SimpleDateFormat("hh:mm:ss");
 	private final JTabbedPane jtp;
 	private String pavadinimas;
-	private Klientas klientas;
+	private NIOKlientas klientas;
 	private JButton mygtukasSiusti;
 	private Caret caret;
 	private JTextField zinutesLaukelis;
@@ -31,7 +34,7 @@ public class KambarioInterfeisas extends JPanel {
 	private JPopupMenu issokantisLangelis;
 	private List<String> prisijungeVartotojai = new ArrayList<String>();
 	
-	public KambarioInterfeisas(final JTabbedPane jtp, Klientas klientas, String pavadinimas) {
+	public KambarioInterfeisas(final JTabbedPane jtp, NIOKlientas klientas, String pavadinimas) {
 		if (jtp == null) {
 	        throw new NullPointerException("TabbedPane is null");
 	    }
@@ -70,7 +73,7 @@ public class KambarioInterfeisas extends JPanel {
 		add(zinutesLaukelis, gbc_textField);
 		zinutesLaukelis.setColumns(10);
 		
-		mygtukasSiusti = new JButton("Siøsti");
+		mygtukasSiusti = new JButton("Siï¿½sti");
 		mygtukasSiusti.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				siustiZinute();
@@ -92,6 +95,9 @@ public class KambarioInterfeisas extends JPanel {
 			prisijungeVartotojai.add(vartotojai[i]);
 		}
 	}
+	public void spausdinkZinute(String zinute, String siuntejas){
+		Istorija.append("[" + DATOS_FORMA.format(new Date()) + "] " + (siuntejas == null?"":siuntejas+": ") + zinute);
+	}
 	public void spausdintiTeksta(String eilute){
 		Istorija.append(eilute + "\n");
 	}
@@ -100,7 +106,7 @@ public class KambarioInterfeisas extends JPanel {
 		String zinute = "/K/"+ pavadinimas + "/Z/" +  zinutesLaukelis.getText();
 		System.out.println(pavadinimas + " siuncia zinute: " + zinute);
 		zinutesLaukelis.setText("");
-		klientas.siusk(zinute);
+		klientas.siuskZinute(zinute);
 	}
 
 }
