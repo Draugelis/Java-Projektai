@@ -12,6 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JPasswordField;
+import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
 
 public class SvecioPrisijungimas extends JFrame {
 
@@ -21,7 +24,9 @@ public class SvecioPrisijungimas extends JFrame {
 	private JButton btnPrisijungti;
 	private JLabel lblVardas;
 	private KlientoLangas kl;
-	private int atsakymas;
+	private JPasswordField pswdLaukelis;
+	private JProgressBar progressBar;
+	private JLabel Krovimosi_tekstas;
 
 	
 	public SvecioPrisijungimas(KlientoLangas kl) {
@@ -47,12 +52,12 @@ public class SvecioPrisijungimas extends JFrame {
 		
 		txtVardas = new JTextField();
 		txtVardas.setBackground(new Color(255, 255, 255));
-		txtVardas.setBounds(87, 143, 111, 30);
+		txtVardas.setBounds(78, 77, 111, 30);
 		contentPane.add(txtVardas);
 		txtVardas.setColumns(10);
 		
-		lblVardas = new JLabel("\u012Eveskite savo vard\u0105");
-		lblVardas.setBounds(87, 102, 102, 30);
+		lblVardas = new JLabel("Vardas");
+		lblVardas.setBounds(105, 43, 47, 30);
 		contentPane.add(lblVardas);
 		
 		btnPrisijungti = new JButton("Prisijungti");
@@ -61,34 +66,68 @@ public class SvecioPrisijungimas extends JFrame {
 				Prisijungimas();
 			}
 		});
-		btnPrisijungti.setBounds(98, 184, 89, 23);
+		btnPrisijungti.setBounds(88, 191, 89, 23);
 		contentPane.add(btnPrisijungti);
+		
+		pswdLaukelis = new JPasswordField();
+		pswdLaukelis.setBounds(78, 152, 111, 28);
+		contentPane.add(pswdLaukelis);
+		
+		JLabel lblSlaptaodis = new JLabel("Slaptažodis");
+		lblSlaptaodis.setBounds(99, 118, 64, 23);
+		contentPane.add(lblSlaptaodis);
+		
+		progressBar = new JProgressBar(0, 100);
+		progressBar.setBounds(0, 308, 304, 14);
+		progressBar.setVisible(false);
+		contentPane.add(progressBar);
+		
+		Krovimosi_tekstas = new JLabel("Siunčiama serveriui..");
+		Krovimosi_tekstas.setHorizontalAlignment(SwingConstants.CENTER);
+		Krovimosi_tekstas.setBounds(35, 283, 219, 14);
+		Krovimosi_tekstas.setVisible(false);
+		contentPane.add(Krovimosi_tekstas);
 		setVisible(true);
 	}
-	public void nustatykAtsakyma(int reiksme){
-		atsakymas = reiksme;
+	public void Klaida(String klaida){
+		JOptionPane.showMessageDialog(null, klaida, "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+		KeistiKrovimoTeksta("Siunčiama serveriui..", 0);
+		Krovimosi_tekstas.setVisible(false);
+		progressBar.setVisible(false);
+		btnPrisijungti.setEnabled(true);
+	}
+	
+	public void PrisijungimoUzbaigimas(String vardas){
+		System.out.println("Prisijungta!");
+		kl.sukurkKambarioInterfeisa("Pagrindinis");
+		kl.setTitle("JC klientas - " + vardas);
+		kl.setVisible(true);
+		this.dispose();
+	}
+	public void KeistiKrovimoTeksta(String tekstas, int n){
+		Krovimosi_tekstas.setText(tekstas);
+		progressBar.setValue(n);
 	}
 	
 	public void Prisijungimas(){
 		String vardas = txtVardas.getText();
-		atsakymas = 0;
-		NIOKlientas klientas = kl.gaukKlienta();
-		if(klientas != null) klientas.siuskZinute(vardas);
-		while(atsakymas == 0){
-			try{
-				Thread.sleep(100);
-			} catch (Exception e){
-				
+		String slaptazodis = new String(pswdLaukelis.getPassword());
+		if(!vardas.isEmpty() || !slaptazodis.isEmpty()){
+			kl.startKlientas(SvecioPrisijungimas.this);
+			NIOKlientas klientas = kl.gaukKlienta();
+			if(klientas != null) {
+				btnPrisijungti.setEnabled(false);
+				Krovimosi_tekstas.setVisible(true);
+				progressBar.setVisible(true);
+				klientas.pradekAutentifikacija(vardas, slaptazodis);
+				KeistiKrovimoTeksta("Autentifikuojama...", 23);
 			}
-		}
-		if(atsakymas == 1){
-			dispose();
-			kl.sukurkKambarioInterfeisa("Pagrindinis");
-			kl.setVisible(true);
+			else{
+				Klaida("Nepavyko susisiekti su serveriu!");
+				System.out.println("Klientas == null");
+			}
 		} else {
-			JOptionPane.showMessageDialog(null, "Nepavyko prisijungi, bandykite dar kart�!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+			Klaida("Neužpildyti visi laikeliai!");
 		}
-		atsakymas = 0;
-		
 	}
 }

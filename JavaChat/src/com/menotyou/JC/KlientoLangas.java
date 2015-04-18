@@ -12,22 +12,22 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
-import com.menotyou.JC.NIOBiblioteka.NIOAptarnavimas;
-
 public class KlientoLangas extends JFrame {
 
-//	private final Font NUMATYTASIS_SRIFTAS = new Font();
+	//	private final Font NUMATYTASIS_SRIFTAS = new Font();
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane jtp;
 	private JTextArea Istorija;
 	private SriftoPasirinkimas fc;
 	private Font pasirinktasSriftas;
 	private KambarioKurimas kk;
+	private PrisijungimasPrieKambario ppk;
 	private static NIOKlientas klientas;
 
 	private JMenuBar menuBar;
@@ -39,6 +39,7 @@ public class KlientoLangas extends JFrame {
 	private JMenuItem mntmVartotojoNustatymai;
 	private JMenu mnKambariai;
 	private JMenuItem mntmPridtiKambar;
+	private JMenuItem mntmJungtisPrieKambario;
 
 	public KlientoLangas() {
 		sukurkLanga();
@@ -61,25 +62,25 @@ public class KlientoLangas extends JFrame {
 		mnFile = new JMenu("Meniu");
 		menuBar.add(mnFile);
 		addWindowListener(new WindowAdapter() {
-			   public void windowClosing(WindowEvent evt) {
-			   }
+			public void windowClosing(WindowEvent evt) {
+				klientas.siuskZinute("<Q>");
+			}
 		});
 
 		mntmOnlineUsers = new JMenuItem("Prisijung\u0119 vartotojai");
 		mntmOnlineUsers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				onlineUsers.setVisible(true);
+				//onlineUsers.setVisible(true);
 			}
 		});
 		mnFile.add(mntmOnlineUsers);
-		
 
 		mntmExit = new JMenuItem("I\u0161eiti");
 		mnFile.add(mntmExit);
-		
+
 		mnNustatymai = new JMenu("Nustatymai");
 		menuBar.add(mnNustatymai);
-		
+
 		mntmTekstoNustatymai = new JMenuItem("Teksto nustatymai");
 		mntmTekstoNustatymai.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -90,14 +91,14 @@ public class KlientoLangas extends JFrame {
 			}
 		});
 		mnNustatymai.add(mntmTekstoNustatymai);
-		
+
 		mntmVartotojoNustatymai = new JMenuItem("Vartotojo nustatymai");
 		mnNustatymai.add(mntmVartotojoNustatymai);
-		
+
 		mnKambariai = new JMenu("Kambariai");
 		menuBar.add(mnKambariai);
-		
-		mntmPridtiKambar = new JMenuItem("Prid\u0117ti Kambar\u012F");
+
+		mntmPridtiKambar = new JMenuItem("Pridėti kambarį");
 		mntmPridtiKambar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				kk = new KambarioKurimas(KlientoLangas.this);
@@ -105,21 +106,45 @@ public class KlientoLangas extends JFrame {
 		});
 		mnKambariai.add(mntmPridtiKambar);
 		
+		mntmJungtisPrieKambario = new JMenuItem("Jungtis prie kambario");
+		mntmJungtisPrieKambario.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
+		mnKambariai.add(mntmJungtisPrieKambario);
+
 		jtp = new JTabbedPane();
 		jtp.setBorder(new EmptyBorder(5, 5, 5, 5));
-		
+		jtp.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		setContentPane(jtp);
 
 	}
-	public void sukurkKambarioInterfeisa(String pavadinimas){
+
+	public void sukurkKambarioInterfeisa(String pavadinimas) {
 		System.out.println("Kuriamas kambarys pavadinimu:" + pavadinimas);
 		KambarioInterfeisas k = new KambarioInterfeisas(jtp, klientas, pavadinimas);
-		if(klientas.pridekKambari(pavadinimas, k))
+		if (klientas.pridekKambari(pavadinimas, k)) {
 			jtp.addTab(pavadinimas, k);
+		} else {
+			JOptionPane.showMessageDialog(null, "Toks kambarys jau egzizstuoja!", "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+		}
 	}
-	public NIOKlientas gaukKlienta(){
+
+	public NIOKlientas gaukKlienta() {
 		return klientas;
 	}
+
+	public void startKlientas(SvecioPrisijungimas sp) {
+		try {
+			klientas = new NIOKlientas(KlientoLangas.this, sp);
+		} catch (IOException e) {
+			System.out.println("Nepavyko paleisti kliento!");
+			e.printStackTrace();
+		}
+		klientas.start();
+	}
+
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -128,18 +153,11 @@ public class KlientoLangas extends JFrame {
 					frame.setVisible(false);
 					SvecioPrisijungimas svecias = new SvecioPrisijungimas(frame);
 					svecias.setVisible(true);
-					klientas = new NIOKlientas(frame, svecias);
-					klientas.start();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
-	
-	
-
-
-
 
 }

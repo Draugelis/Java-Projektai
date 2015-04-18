@@ -25,17 +25,14 @@ public class PagrindinisServeris {
 	}
 	
 	private static void paleiskServeri(int portas, boolean konsoleIjungta){
-		try
-        {
+		try {
 			EventuValdiklis eventuValdiklis = new EventuValdiklis();
             NIOServerioSasaja sasaja = eventuValdiklis.gaukNIOAptarnavima().sukurkServerioSasaja(portas);
             sasaja.stebek(new JCServeris(eventuValdiklis));
             sasaja.nustatykPrisijungimuFiltra(PrisijungimuFiltras.LEISK_VISUS);
             eventuValdiklis.start();
-        }
-        catch (IOException e)
-        {
-                e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 	}
 }
