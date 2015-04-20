@@ -1,186 +1,166 @@
 package com.menotyou.JC;
 
 import java.awt.BorderLayout;
-import java.awt.Checkbox;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
-import java.awt.List;
 import java.awt.Panel;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
-
+import javax.swing.text.DefaultCaret;
+import javax.swing.DropMode;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class SriftoPasirinkimas extends JDialog {
 
-  protected Font pasirinktasSriftas;
-  protected String pasirinktoSriftoPav;
-  protected int pasirinktoSriftoDydis;
-  protected int pasirinktoSriftoStilius;
-  protected boolean yraParyskintas, yraPasviras;
+	private static final long serialVersionUID = -1686982470802696604L;
 
+	protected Font m_pasirinktasSriftas;
+	protected String m_pasirinktoSriftoPav;
+	protected float m_pasirinktoSriftoDydis;
 
-  protected String demoTekstas = " [22:15:41] Demo prisijungë \n[22:15:44] Demo: Labas \n[22:16:15] Demo: Ðiandien graþus oras! ";
+	protected String demoTekstas = "[22:15:41] Demo prisijungÄ— \n[22:15:44] Demo: Labas \n[22:16:15] Demo: Å iandien graÅ¾us oras! Niekio nuostabesnio nesu matÄ™s!";
 
-  protected String sriftoPavadinimai[];
-  
-  protected JComboBox pavadinimai;
-  protected JComboBox dydziai;
+	protected JComboBox<String> m_pavadinimai;
+	protected JComboBox<String> m_dydziai;
 
-  Checkbox paryskintas, pasviras;
+	protected String sriftuDydziai[] = { "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "30" };
 
-  protected String sriftuDydziai[] = { "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18","19","20","21","22",
-      "23", "24", "30"};
+	protected JTextArea demo;
 
-  protected JTextArea demo;
+	public SriftoPasirinkimas(Frame f, final Font dabartinis) {
+		super(f, "Teksto nustatymai", true);
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent evt) {
+				m_pasirinktasSriftas = dabartinis;
+				dispose();
+				setVisible(false);
+			}
+		});
+		setTitle("Teksto nustatymai");
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setSize(500, 500);
+		Container cp = getContentPane();
 
+		Panel top = new Panel();
+		top.setLayout(new FlowLayout());
 
-public SriftoPasirinkimas(Frame f, final Font dabartinis) {
-    super(f, "Font Chooser", true);
-    setTitle("Teksto nustatymai");
+		m_pavadinimai = new JComboBox<String>();
+		top.add(m_pavadinimai);
 
-    Container cp = getContentPane();
+		m_pasirinktoSriftoPav = dabartinis.getFontName();
+		System.out.println("dabartinis.getFontName() = " + m_pasirinktoSriftoPav);
+		int indeksas = 0;
+		String[] m_sriftuPavadinimai = KlientoLangas.gaukSrfituPavadinimus();
+		for (int i = 0; i < m_sriftuPavadinimai.length; i++){
+			m_pavadinimai.addItem(m_sriftuPavadinimai[i].substring(0, m_sriftuPavadinimai[i].length() - 4));
+			if(m_sriftuPavadinimai[i].equals(m_pasirinktoSriftoPav + ".ttf"))
+				indeksas = i;
+		}
+		m_pavadinimai.setSelectedIndex(indeksas);
+		System.out.println("Selected item: " + m_pavadinimai.getSelectedItem());
 
-    Panel top = new Panel();
-    top.setLayout(new FlowLayout());
+		m_dydziai = new JComboBox<String>();
+		top.add(m_dydziai);
 
-    pavadinimai = new JComboBox();
-    top.add(pavadinimai);
+		m_pasirinktoSriftoDydis = dabartinis.getSize();
+		for (int i = 0; i < sriftuDydziai.length; i++)
+			m_dydziai.addItem(sriftuDydziai[i]);
+		m_dydziai.setSelectedItem(Integer.toString(((int) m_pasirinktoSriftoDydis)));
 
-    sriftoPavadinimai = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+		cp.add(top, BorderLayout.NORTH);
+		Panel attrs = new Panel();
+		top.add(attrs);
+		attrs.setLayout(new GridLayout(0, 1));
 
-    pasirinktoSriftoPav = dabartinis.getFontName();
-    for (int i = 0; i < sriftoPavadinimai.length; i++)
-    	pavadinimai.addItem(sriftoPavadinimai[i]);
-    pavadinimai.setSelectedItem(pasirinktoSriftoPav);
+		demo = new JTextArea();
+		demo.setLineWrap(true);
+		demo.setFont(dabartinis);
+		demo.setAlignmentY(demo.CENTER_ALIGNMENT);
+		demo.setText(demoTekstas);
+		demo.setEditable(false);
+		demo.setSize(300, 100);
+		JScrollPane langelis = new JScrollPane(demo);
+		cp.add(langelis, BorderLayout.CENTER);
 
-    dydziai = new JComboBox();
-    top.add(dydziai);
-    
-    
-    pasirinktoSriftoDydis = dabartinis.getSize();
-    for (int i = 0; i < sriftuDydziai.length; i++){
-      dydziai.addItem(sriftuDydziai[i]);
-    }
-    dydziai.setSelectedItem(pasirinktoSriftoDydis);
+		Panel bot = new Panel();
 
-    cp.add(top, BorderLayout.NORTH);
-    pasirinktoSriftoStilius = dabartinis.getStyle();
-    
-    switch(pasirinktoSriftoStilius){
-    case(Font.PLAIN):
-        yraParyskintas = false;
-    	yraPasviras = false;
-    	break;
-    case(Font.BOLD):
-    	yraParyskintas = true;
-    	yraPasviras = false;
-    	break;
-    case(Font.ITALIC):
-    	yraParyskintas = false;
-    	yraPasviras = true;
-    	break;
-    case(Font.BOLD + Font.ITALIC):
-    	yraParyskintas = true;
-		yraPasviras = true;
-		break;
-    }
-    Panel attrs = new Panel();
-    top.add(attrs);
-    attrs.setLayout(new GridLayout(0, 1));
-    attrs.add(paryskintas = new Checkbox("Bold", yraParyskintas));
-    attrs.add(pasviras = new Checkbox("Italic", yraPasviras));
+		JButton okButton = new JButton("OK");
+		bot.add(okButton);
+		okButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				demoPerziura();
+				dispose();
+				setVisible(false);
+			}
+		});
 
-    demo = new JTextArea();
-    demo.setAlignmentY(demo.CENTER_ALIGNMENT);
-    demo.setText(demoTekstas);
-    demo.setEditable(false);
-    demo.setSize(300, 100);
-    cp.add(demo, BorderLayout.CENTER);
+		JButton pvButton = new JButton("Bandyti");
+		bot.add(pvButton);
+		pvButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				demoPerziura();
+			}
+		});
 
-    Panel bot = new Panel();
+		JButton canButton = new JButton("AtÅ¡aukti");
+		bot.add(canButton);
+		canButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				m_pasirinktasSriftas = dabartinis;
+				dispose();
+				setVisible(false);
+			}
+		});
 
-    JButton okButton = new JButton("OK");
-    bot.add(okButton);
-    okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        demoPerziura();
-        dispose();
-        setVisible(false);
-      }
-    });
+		cp.add(bot, BorderLayout.SOUTH);
 
-    JButton pvButton = new JButton("Bandyti");
-    bot.add(pvButton);
-    pvButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        demoPerziura();
-      }
-    });
+		demoPerziura();
 
-    JButton canButton = new JButton("Atsaukti");
-    bot.add(canButton);
-    canButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-    	pasirinktasSriftas = dabartinis;
-        dispose();
-        setVisible(false);
-      }
-    });
+		pack();
+		setLocationRelativeTo(null);
+	}
+	public void nustatykSrifta(Font sriftas){
+		m_pasirinktasSriftas = sriftas;
+	}
 
-    cp.add(bot, BorderLayout.SOUTH);
+	protected void demoPerziura() {
+		m_pasirinktoSriftoPav = (String) m_pavadinimai.getSelectedItem();
+		m_pasirinktoSriftoDydis = Float.parseFloat((String) m_dydziai.getSelectedItem());
 
-    demoPerziura();
+		System.out.println("Pasirinko srifto pavadinimas: " + m_pasirinktoSriftoPav);
+		System.out.println("Pasirinko srifto dydis: " + m_pasirinktoSriftoDydis);
 
-    pack();
-    setLocationRelativeTo(null);
-  }
+		m_pasirinktasSriftas = KlientoLangas.gaukSriftus().get(m_pasirinktoSriftoPav + ".ttf").deriveFont((float) m_pasirinktoSriftoDydis);
+		demo.setFont(m_pasirinktasSriftas);
 
-  protected void demoPerziura() {
-    pasirinktoSriftoPav = (String) pavadinimai.getSelectedItem();
-    pasirinktoSriftoDydis = Integer.parseInt((String) dydziai.getSelectedItem());
-    yraParyskintas = paryskintas.getState();
-    yraPasviras = pasviras.getState();
-    
-    pasirinktoSriftoStilius = Font.PLAIN;
-    if (yraParyskintas)
-    	pasirinktoSriftoStilius = Font.BOLD;
-    else if (yraPasviras)
-    	pasirinktoSriftoStilius = Font.ITALIC;
-    else if(yraParyskintas && yraPasviras)
-    	pasirinktoSriftoStilius = Font.BOLD + Font.ITALIC; 
-    pasirinktasSriftas = new Font(pasirinktoSriftoPav, pasirinktoSriftoStilius, pasirinktoSriftoDydis);
-    demo.setFont(pasirinktasSriftas);
-    
-    pack();
-  }
+		pack();
+	}
 
-  public String gaukPasirinktoSriftoPav() {
-    return pasirinktoSriftoPav;
-  }
+	public String gaukPasirinktoSriftoPav() {
+		return m_pasirinktoSriftoPav;
+	}
 
-  public int gaukPasirinktoSriftoDydi() {
-    return pasirinktoSriftoDydis;
-  }
-  public int gaukPasirinktoSriftoStiliu(){
-	  return pasirinktoSriftoStilius;
-  }
+	public float gaukPasirinktoSriftoDydi() {
+		return m_pasirinktoSriftoDydis;
+	}
 
-  public Font gaukPasirinktaSrifta() {
-    return pasirinktasSriftas;
-  }
+	public Font gaukPasirinktaSrifta() {
+		return m_pasirinktasSriftas;
+	}
 
 }

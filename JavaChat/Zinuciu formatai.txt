@@ -1,32 +1,32 @@
 Kliento siunciamos zinutes:
 	Zinutes serveriui:
-		<NK>KambarioPavadinimas
-		<NK>KambarioPavadinimas<KZ>KambarioPradineZinute
-		<K+>KambarioPavadinimas
-		<K->KambarioPavadinimas
-		<R>VartotojoVardas<P>UzhasuotasSlaptazodis
+		<NK>KambarioPavadinimas -> Registruojamas naujas kambarys be pradinës þinutës 
+		<NK>KambarioPavadinimas<KZ>KambarioPradineZinute - Registruojamas naujas kambarys su pradine zinute
+		<K+>KambarioPavadinimas -> Vartotojas jungiasi prie kambario
+		<K->KambarioPavadinimas -> Vartotojas atsijungia nuo kambario
+		<R1>VartotojoVardas -> Vartotojas siunèia savo varda pirmam autentifkacijos þingsniui
+		<R2>VartotojoVardas<P>(sha512(sha256(slaptaþodis+vartotojoDruska)+RandomBituSeka)*1000)
+								\/
+		 Vartotojas siunèia savo varda pirmam autentifkacijos þingsniui
+		 
+		<KS> -> Prasymas atsiøsti dabartini kambariø saraðà.
 		<Q>Vartotojas atsijunge "svariai"
 	Zinutes kambariui:
 		<K>KambarioPavadinimas<Z>ZinutesTekstas
 
 Serverio siunciamos zinutes:
 	Zinutes klientui:
-		<EK+>Tokio kambario nera
-		<ENK>Kambarys pavadinimu: kambarioPavadinimas, jau egzistuoja
-		<K+>KambarioPavadinimas
-		<ER>Netinkamas vardas ar slaptazodis
-		<R+>Vardas
-		<C>RandomBituSeka
+		<EK+> -> Tokio kambario nëra
+		<ENK> -> Toks kambarys jau egzistuoja
+		<K+>KambarioPavadinimas -> Nurodymas klientinei programai sukurti kambará
+		<ER> -> Netinkamas vardas ar slaptazodis
+		<R+> -> Prisijungta sëkmingai
+		<C1>RandomBituSeka -> atsitiktinai sugeneruota bitu seka vartotojo autentifikacijai
+		<C2>VartotojoDruska -> vartotojo registracijos metu sugeneruota bitu seka.
+		<KS>kambarioPavadinimas[0]<K>kambarioPavadinimas[0]<K>... <END> -> kambariø saraðas
 	Zinutes kambariui:
 		<K>kambarioPavadinimas<V>SiuntejoVardas<Z>ZinutesTekstas
-		<K>KambarioPavadinimas<VS>VartotojoVardas[0]<T>VartotojoVardas[1]<T>...<END>
+		<K>KambarioPavadinimas<VS>VartotojoVardas[0]<T>VartotojoVardas[1]<T>...<END> -> kambario vartotoju saraðas
 		<K>KambarioPavadinimas<V->VartotojoVardas
 		<K>KambarioPavadinimas<V+>VartotojoVardas
 		<K>KambarioPavadinimas<I>Informacija
-
-
-Druska:
-f7 c5 9d aa 34 34 9f db 15 bf 93 52 53 86 8a 28 
-1d 10 c5 45 9f 64 4b 11 1a 44 f1 58 72 a2 6b d4 
-22 33 e6 f2 5c 02 d8 73 9b 46 58 ff e8 f7 96 90 
-b1 c8 8b 92 84 f3 10 3f 8d f1 7d ae 72 b5 98 1d 

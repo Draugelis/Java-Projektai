@@ -15,6 +15,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class SvecioPrisijungimas extends JFrame {
 
@@ -51,6 +53,13 @@ public class SvecioPrisijungimas extends JFrame {
 		contentPane.setLayout(null);
 		
 		txtVardas = new JTextField();
+		txtVardas.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					Prisijungimas();
+				}
+			}
+		});
 		txtVardas.setBackground(new Color(255, 255, 255));
 		txtVardas.setBounds(78, 77, 111, 30);
 		contentPane.add(txtVardas);
@@ -70,6 +79,13 @@ public class SvecioPrisijungimas extends JFrame {
 		contentPane.add(btnPrisijungti);
 		
 		pswdLaukelis = new JPasswordField();
+		pswdLaukelis.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					Prisijungimas();
+				}
+			}
+		});
 		pswdLaukelis.setBounds(78, 152, 111, 28);
 		contentPane.add(pswdLaukelis);
 		
@@ -89,7 +105,7 @@ public class SvecioPrisijungimas extends JFrame {
 		contentPane.add(Krovimosi_tekstas);
 		setVisible(true);
 	}
-	public void Klaida(String klaida){
+	public void klaida(String klaida){
 		JOptionPane.showMessageDialog(null, klaida, "Klaida!", JOptionPane.INFORMATION_MESSAGE);
 		KeistiKrovimoTeksta("Siunčiama serveriui..", 0);
 		Krovimosi_tekstas.setVisible(false);
@@ -110,9 +126,9 @@ public class SvecioPrisijungimas extends JFrame {
 	}
 	
 	public void Prisijungimas(){
-		String vardas = txtVardas.getText();
-		String slaptazodis = new String(pswdLaukelis.getPassword());
-		if(!vardas.isEmpty() || !slaptazodis.isEmpty()){
+		String vardas = txtVardas.getText().trim();
+		String slaptazodis = (new String(pswdLaukelis.getPassword())).trim();
+		if(!vardas.isEmpty() && !slaptazodis.isEmpty()){
 			kl.startKlientas(SvecioPrisijungimas.this);
 			NIOKlientas klientas = kl.gaukKlienta();
 			if(klientas != null) {
@@ -123,11 +139,11 @@ public class SvecioPrisijungimas extends JFrame {
 				KeistiKrovimoTeksta("Autentifikuojama...", 23);
 			}
 			else{
-				Klaida("Nepavyko susisiekti su serveriu!");
+				klaida("Nepavyko susisiekti su serveriu!");
 				System.out.println("Klientas == null");
 			}
 		} else {
-			Klaida("Neužpildyti visi laikeliai!");
+			klaida("Neužpildyti visi laikeliai!");
 		}
 	}
 }

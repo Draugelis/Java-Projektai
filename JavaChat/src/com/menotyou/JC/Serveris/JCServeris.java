@@ -100,8 +100,8 @@ public class JCServeris implements ServerioSasajosStebetojas {
 				} catch (SQLException e) {
 					gaukEventuValdikli().gaukNIOAptarnavima().ispekApieIsimti(e);
 				} finally {
-					close(ps);
-					close(rs);
+					uzdaryk(ps);
+					uzdaryk(rs);
 				}
 			}
 		}.start();
@@ -174,22 +174,42 @@ public class JCServeris implements ServerioSasajosStebetojas {
 		}
 	}
 	
-	public void close(Statement ps) {
+	public void uzdaryk(Statement ps) {
 	       if (ps!=null){
 	           try {
 	               ps.close();
 	           } catch (SQLException ignore) {
 	           }
 	       }
-	   }
+	 }
 	 
-	 public void close(ResultSet rs) {
+	 public void uzdaryk(ResultSet rs) {
 	     if (rs!=null){
 	         try {
 	             rs.close();
 	         } catch (SQLException ignore) {
 	         }
 	     }
+	}
+
+	public void siuskKambariuSarasa(Vartotojas vartotojas) {
+		if(vartotojas == null) System.out.println("Klaida: Nepavyko siųsti kambario sąrašo, nes nurodytas vartotojas neegzistuoja!");
+		Collection<String> c = m_kambariai.keySet();
+		Iterator<String> itr = c.iterator();
+		StringBuffer sb = new StringBuffer("<KS>");
+		while(itr.hasNext()){
+			sb.append(itr.next());
+			if (itr.hasNext())
+				sb.append("<K>");
+		}
+		sb.append("<END>");
+		vartotojas.siuskZinute(sb.toString());
+	}
+
+	public boolean jauPrisijunges(String zinute) {
+		for(Vartotojas v: m_vartotojai)
+			if(v.gaukVarda() != null && v.gaukVarda().equals(zinute)) return true;
+		return false;
 	}
 
 }

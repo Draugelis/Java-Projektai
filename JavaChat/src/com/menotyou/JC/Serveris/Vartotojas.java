@@ -98,7 +98,8 @@ public class Vartotojas implements SasajosStebetojas {
 		if (m_vardas == null) {
 			if (zinute.startsWith("<R1>")) {
 				zinute = zinute.substring(4);
-				m_serveris.gaukDuomenis(this, zinute);
+				if(!m_serveris.jauPrisijunges(zinute)) m_serveris.gaukDuomenis(this, zinute);
+				else m_sasaja.rasyk("<EP>".getBytes());
 			} else if (zinute.startsWith("<R2>")) {
 				zinute = zinute.substring(4);
 				String vardas = zinute.split("<P>")[0];
@@ -130,6 +131,8 @@ public class Vartotojas implements SasajosStebetojas {
 			if (zinute.startsWith("<K>")) {
 				zinute = zinute.substring(3);
 				m_serveris.perduokKambariui(this, zinute);
+			} else if(zinute.startsWith("<KS>")){
+				m_serveris.siuskKambariuSarasa(Vartotojas.this);
 			} else if (zinute.startsWith("<NK>")) {
 				zinute = zinute.substring(4);
 				String k_pavadinimas;
@@ -150,17 +153,21 @@ public class Vartotojas implements SasajosStebetojas {
 					}
 				}
 			} else if (zinute.startsWith("<K+>")) {
-				String pavadinimas = zinute.substring(4);
-				Kambarys kambarys = m_serveris.gaukKambari(pavadinimas);
+				Kambarys kambarys = m_serveris.gaukKambari(zinute.substring(4));
 				if (kambarys == null) {
-					System.out.println("Operacija: <K+> Klaida: Kambario pavadinimu " + pavadinimas + " nera");
+					System.out.println("Operacija: <K+> Klaida: Kambario pavadinimu " + zinute.substring(4) + " nera");
 					m_sasaja.rasyk("<EK+>".getBytes());
+					return;
 				}
 				kambarys.pridekKlienta(this);
 			} else if (zinute.startsWith("<K->")) {
-				String pavadinimas = zinute.substring(4);
-				Kambarys kambarys = m_serveris.gaukKambari(pavadinimas);
-				if (kambarys == null) System.out.println("Operacija: <K-> Klaida: Kambario pavadinimu " + pavadinimas + " nera");
+				System.out.println("Bandoma šalinti klientą");
+				Kambarys kambarys = m_serveris.gaukKambari(zinute.substring(4));
+				if (kambarys == null) System.out.println("Operacija: <K-> Klaida: Kambario pavadinimu " + zinute.substring(4) + " nera");
+				else kambarys.pasalinkKlienta(this);
+			} else if(zinute.startsWith("<KP>")){
+				Kambarys kambarys = m_serveris.gaukKambari("Pagrindinis");
+				kambarys.pridekKlienta(this);
 			} else if (zinute.startsWith("<Q>")) {
 				m_serveris.pasalinkKlienta(this);
 			}

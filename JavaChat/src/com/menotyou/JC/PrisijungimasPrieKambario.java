@@ -1,68 +1,98 @@
 package com.menotyou.JC;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
 import javax.swing.JProgressBar;
+import javax.swing.border.EmptyBorder;
+import javax.swing.SwingConstants;
 
 public class PrisijungimasPrieKambario extends JFrame {
 	private static final long serialVersionUID = 8979555935226577804L;
 	private JPanel contentPane;
-	private JTextField pavadinimas;
 	private NIOKlientas klientas;
+	private JButton btnNewButton;
+	private JLabel lblPavadinimas;
+	private JProgressBar progressBar;
+	private JComboBox<String> m_kambariai;
 
 	public PrisijungimasPrieKambario(final KlientoLangas klientoLangas) {
 		setTitle("Prisijungimas prie kambario");
 		setResizable(false);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 304, 318);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setSize(250, 250);
 		klientas = klientoLangas.gaukKlienta();
 
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(null);
 
-		pavadinimas = new JTextField();
-		pavadinimas.setBounds(75, 140, 112, 20);
-		contentPane.add(pavadinimas);
-		pavadinimas.setColumns(10);
-
-		JButton btnNewButton = new JButton("Jungtis");
+		btnNewButton = new JButton("Jungtis");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				kambarioUzklausa(pavadinimas.getText(), pradineZinute.getText());
-				klientoLangas.sukurkKambarioInterfeisa(pavadinimas.getText());
+				kambarioUzklausa((String)m_kambariai.getSelectedItem());
 			}
 		});
-		btnNewButton.setBounds(75, 188, 115, 23);
+		btnNewButton.setBounds(59, 124, 115, 23);
 		contentPane.add(btnNewButton);
 
-		JLabel lblPavadinimas = new JLabel("Pavadinimas");
-		lblPavadinimas.setBounds(87, 103, 71, 14);
+		lblPavadinimas = new JLabel("Galimi kambariai:");
+		lblPavadinimas.setHorizontalAlignment(SwingConstants.CENTER);
+		lblPavadinimas.setBounds(35, 41, 164, 32);
 		contentPane.add(lblPavadinimas);
 
-		setContentPane(contentPane);
-
-		JProgressBar progressBar = new JProgressBar();
-		progressBar.setBounds(0, 253, 298, 14);
+		progressBar = new JProgressBar();
+		progressBar.setBounds(0, 276, 298, 14);
+		progressBar.setVisible(false);
 		contentPane.add(progressBar);
-
-		JLabel LoadingLbl = new JLabel("Kraunasi...");
-		LoadingLbl.setBounds(100, 233, 64, 20);
-		contentPane.add(LoadingLbl);
+		
+		m_kambariai = new JComboBox<String>();
+		m_kambariai.setLocation(70, 73);
+		m_kambariai.setSize(100, 20);
+		m_kambariai.setMaximumRowCount(2000);
+		m_kambariai.setPreferredSize(new Dimension(100, 20));
+		contentPane.add(m_kambariai);
+		
+		setContentPane(contentPane);
+		setLocationRelativeTo(null);
 		setVisible(true);
 	}
-
-	private void kambarioUzklausa(String pavadinimas, String pradineZinute) {
-		if (!pradineZinute.isEmpty()) klientas.siuskZinute("<NK>" + pavadinimas + "<KZ>" + pradineZinute);
-		else
-			klientas.siuskZinute("<NK>" + pavadinimas);
+	public void klaida(String klaida){
+		JOptionPane.showMessageDialog(null, klaida, "Klaida!", JOptionPane.INFORMATION_MESSAGE);
+		progressBar.setVisible(false);
+		btnNewButton.setEnabled(true);
+	}
+	public void nustatykKambarius(String[] kambariai){
+		m_kambariai.removeAllItems();
+		for (int i = 0; i < kambariai.length; i++){
+			if(!klientas.jauAtidarytasKambarys(kambariai[i]))m_kambariai.addItem(kambariai[i]);
+		}
+		if(m_kambariai.getItemCount() == 0){
+			lblPavadinimas.setText("Šiuo metu jokių kambarių nėra.");
+			m_kambariai.setVisible(false);
+			btnNewButton.setEnabled(false);
+		} else {
+			lblPavadinimas.setText("Galimi kambariai:");
+			m_kambariai.setVisible(true);
+			btnNewButton.setEnabled(true);
+		}
+	}
+	public void pasalink(){
+		progressBar.setVisible(false);
+		btnNewButton.setEnabled(true);
+		dispose();
+	}
+	private void kambarioUzklausa(String pavadinimas) {
+		klientas.siuskZinute("<K+>" + pavadinimas);
+		progressBar.setVisible(false);
+		progressBar.setValue(50);
+		btnNewButton.setEnabled(true);
 	}
 }
