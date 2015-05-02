@@ -6,10 +6,20 @@ import com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja;
 import com.menotyou.JC.NIOBiblioteka.PrisijungimuFiltras;
 import com.menotyou.JC.NIOBiblioteka.EventuValdiklis.EventuValdiklis;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PagrindinisServeris.
+ */
 public class PagrindinisServeris {
 	
+	/** The Constant DEFAULT_PORT. */
 	private final static int DEFAULT_PORT = 8192;
 
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 */
 	public static void main(String[] args) {
 		int port;
 		if (args.length > 1) {
@@ -24,6 +34,12 @@ public class PagrindinisServeris {
 		}
 	}
 	
+	/**
+	 * Paleisk serveri.
+	 *
+	 * @param portas the portas
+	 * @param konsoleIjungta the konsole ijungta
+	 */
 	private static void paleiskServeri(int portas, boolean konsoleIjungta){
 		try {
 			EventuValdiklis eventuValdiklis = new EventuValdiklis();

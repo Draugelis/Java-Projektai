@@ -13,23 +13,54 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class NIOAptarnavimas.
+ */
 public class NIOAptarnavimas {
+	
+	/** The Constant NUMATYTASIS_IO_BUFFERIO_DYDIS. */
 	public final static int NUMATYTASIS_IO_BUFFERIO_DYDIS = 64 * 1024;
 	
+	/** The m_selektorius. */
 	private final Selector m_selektorius;
+	
+	/** The m_vidine ivykiu eile. */
 	private final Queue <Runnable> m_vidineIvykiuEile;
+	
+	/** The m_bendras buferis. */
 	private ByteBuffer m_bendrasBuferis;
+	
+	/** The m_isimciu stebetojas. */
 	private IsimciuStebetojas m_isimciuStebetojas;
 	
+	/**
+	 * Instantiates a new NIO aptarnavimas.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public NIOAptarnavimas() throws IOException{
 		this(NUMATYTASIS_IO_BUFFERIO_DYDIS);
 	}
+	
+	/**
+	 * Instantiates a new NIO aptarnavimas.
+	 *
+	 * @param ioBuferioDydis the io buferio dydis
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public NIOAptarnavimas(int ioBuferioDydis) throws IOException{
 		m_selektorius = Selector.open();
 		m_vidineIvykiuEile = new ConcurrentLinkedQueue<Runnable>();
 		m_isimciuStebetojas = IsimciuStebetojas.NUMATYTASIS;
 		nustatykBuferioDydi(ioBuferioDydis);
 	}
+	
+	/**
+	 * Pasirink blokuodamas.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public synchronized void pasirinkBlokuodamas() throws IOException{
 		
 		vykdykEile();
@@ -38,6 +69,12 @@ public class NIOAptarnavimas {
 		}
 		vykdykEile();
 	}
+	
+	/**
+	 * Pasirink neblokuodamas.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public synchronized void pasirinkNeblokuodamas() throws IOException{
 		vykdykEile();
 		if(m_selektorius.selectNow() > 0){
@@ -45,6 +82,13 @@ public class NIOAptarnavimas {
 		}
 		vykdykEile();
 	}
+	
+	/**
+	 * Pasirink blokuodamas.
+	 *
+	 * @param pauzesLaikas the pauzes laikas
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public synchronized void pasirinkBlokuodamas(long pauzesLaikas) throws IOException{
 		vykdykEile();
 		if(m_selektorius.select(pauzesLaikas) > 0){
@@ -52,6 +96,10 @@ public class NIOAptarnavimas {
 		}
 		vykdykEile();
 	}
+	
+	/**
+	 * Vykdyk eile.
+	 */
 	private void vykdykEile(){
         Runnable ivykis;
         while ((ivykis = m_vidineIvykiuEile.poll()) != null){
@@ -62,19 +110,55 @@ public class NIOAptarnavimas {
 	        }
         }
     }
+	
+	/**
+	 * Nustatyk buferio dydi.
+	 *
+	 * @param naujasBuferioDysis the naujas buferio dysis
+	 */
 	public void nustatykBuferioDydi(int naujasBuferioDysis){
 		 if (naujasBuferioDysis < 256) throw new IllegalArgumentException("Buferis negali buti ma�esnins nei 256 bitai");
 		 m_bendrasBuferis = ByteBuffer.allocate(naujasBuferioDysis);
 	}
+	
+	/**
+	 * Gauk buferio dydi.
+	 *
+	 * @return the int
+	 */
 	public int gaukBuferioDydi(){
 		return m_bendrasBuferis.capacity();
 	}
+	
+	/**
+	 * Gauk bendra buferi.
+	 *
+	 * @return the byte buffer
+	 */
 	public ByteBuffer gaukBendraBuferi(){
 		return m_bendrasBuferis;
 	}
+	
+	/**
+	 * Sukurk sasaja.
+	 *
+	 * @param kurejas the kurejas
+	 * @param portas the portas
+	 * @return the NIO sasaja
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public NIOSasaja sukurkSasaja(String kurejas, int portas) throws IOException{
 		return sukurkSasaja(InetAddress.getByName(kurejas), portas);
 	}
+	
+	/**
+	 * Sukurk sasaja.
+	 *
+	 * @param inetAdresas the inet adresas
+	 * @param portas the portas
+	 * @return the NIO sasaja
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public NIOSasaja sukurkSasaja(InetAddress inetAdresas, int portas) throws IOException{
 		SocketChannel kanalas = SocketChannel.open();
 		kanalas.configureBlocking(false);
@@ -82,13 +166,38 @@ public class NIOAptarnavimas {
 		kanalas.connect(adresas);
 		return registruokSasajosKanala(kanalas, adresas);
 	}
+	
+	/**
+	 * Sukurk serverio sasaja.
+	 *
+	 * @param portas the portas
+	 * @return the NIO serverio sasaja
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public NIOServerioSasaja sukurkServerioSasaja(int portas) throws IOException{
 		return sukurkServerioSasaja(portas, -1);
 	}
 	
+	/**
+	 * Sukurk serverio sasaja.
+	 *
+	 * @param portas the portas
+	 * @param limitas the limitas
+	 * @return the NIO serverio sasaja
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public NIOServerioSasaja sukurkServerioSasaja(int portas, int limitas) throws IOException{
 		return sukurkServerioSasaja(new InetSocketAddress(portas), limitas);
 	}
+	
+	/**
+	 * Sukurk serverio sasaja.
+	 *
+	 * @param adresas the adresas
+	 * @param limitas the limitas
+	 * @return the NIO serverio sasaja
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public NIOServerioSasaja sukurkServerioSasaja(InetSocketAddress adresas, int limitas) throws IOException{
 		ServerSocketChannel kanalas = ServerSocketChannel.open();
 		kanalas.socket().setReuseAddress(true);
@@ -98,12 +207,25 @@ public class NIOAptarnavimas {
 		pridekIEile(new KanaloRegistravimoIvykis(kanaloValdiklis));
 		return kanaloValdiklis;
 	}
+	
+	/**
+	 * Registruok sasajos kanala.
+	 *
+	 * @param kanalas the kanalas
+	 * @param adresas the adresas
+	 * @return the NIO sasaja
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	NIOSasaja registruokSasajosKanala(SocketChannel kanalas, InetSocketAddress adresas) throws IOException{
 		kanalas.configureBlocking(false);
 		SasajosKanaloValdiklis kanaloValdiklis = new SasajosKanaloValdiklis(this, kanalas, adresas);
 		pridekIEile(new KanaloRegistravimoIvykis(kanaloValdiklis));
 		return kanaloValdiklis;
 	}
+	
+	/**
+	 * Apdorok pasirinktus raktus.
+	 */
 	private void apdorokPasirinktusRaktus(){
 		Iterator<SelectionKey> it = m_selektorius.selectedKeys().iterator();
 		while(it.hasNext()){
@@ -117,6 +239,11 @@ public class NIOAptarnavimas {
 		}
 	}
 	
+	/**
+	 * Apdorok rakta.
+	 *
+	 * @param raktas the raktas
+	 */
 	private void apdorokRakta(SelectionKey raktas){
 		KanaloValdiklis valdiklis = (KanaloValdiklis) raktas.attachment();
 		try{
@@ -137,23 +264,55 @@ public class NIOAptarnavimas {
 			valdiklis.uzdaryk(e);
 		}
 	}
+	
+	/**
+	 * Isjunk.
+	 */
 	public void isjunk(){
 		if(!atidarytas()) return;
 		pridekIEile(new IsjungimoIvykis());
 	}
+	
+	/**
+	 * Atidarytas.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean atidarytas(){
 		return m_selektorius.isOpen();
 	}
+	
+	/**
+	 * Pridek i eile.
+	 *
+	 * @param ivykis the ivykis
+	 */
 	public void pridekIEile(Runnable ivykis){
 		m_vidineIvykiuEile.add(ivykis);
 		pabusk();
 	}
+	
+	/**
+	 * Gauk eile.
+	 *
+	 * @return the queue
+	 */
 	public Queue<Runnable> gaukEile(){
 		return new LinkedList<Runnable>(m_vidineIvykiuEile);
 	}
+	
+	/**
+	 * Pabusk.
+	 */
 	public void pabusk(){
 		m_selektorius.wakeup();
 	}
+	
+	/**
+	 * Nustatyk isimciu priziuretoja.
+	 *
+	 * @param isimciuStebetojas the isimciu stebetojas
+	 */
 	public void nustatykIsimciuPriziuretoja(IsimciuStebetojas isimciuStebetojas){
 		final IsimciuStebetojas naujasIsimciuStebetojas = isimciuStebetojas == null ? IsimciuStebetojas.NUMATYTASIS : isimciuStebetojas;
 		pridekIEile(new Runnable(){
@@ -163,6 +322,11 @@ public class NIOAptarnavimas {
 		});
 	}
 	
+	/**
+	 * Ispek apie isimti.
+	 *
+	 * @param t the t
+	 */
 	public void ispekApieIsimti(Throwable t){
 		try{
 			m_isimciuStebetojas.ispekApieIsimti(t);
@@ -173,14 +337,26 @@ public class NIOAptarnavimas {
 		}
 	}
 	
+	/**
+	 * The Class KanaloRegistravimoIvykis.
+	 */
 	private class KanaloRegistravimoIvykis implements Runnable{
 
+		/** The m_kanalo valdiklis. */
 		private final KanaloValdiklis m_kanaloValdiklis;
 		
+		/**
+		 * Instantiates a new kanalo registravimo ivykis.
+		 *
+		 * @param valdiklis the valdiklis
+		 */
 		private KanaloRegistravimoIvykis(KanaloValdiklis valdiklis){
 			m_kanaloValdiklis = valdiklis;
 		}
 		
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
 		public void run() {
 			try{
 				System.out.println("Registruojamas naujas kanalas adresu: " + m_kanaloValdiklis.gaukAdresa());
@@ -193,12 +369,23 @@ public class NIOAptarnavimas {
 			}	
 		}
 		
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		@Override
 		public String toString(){
 			return "Registruojamas [" + m_kanaloValdiklis + "]";
 		}
 	}
+	
+	/**
+	 * The Class IsjungimoIvykis.
+	 */
 	private class IsjungimoIvykis implements Runnable{
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
 		public void run(){
 			System.out.println("Isjungiama... Geros dienos");
 			if(!atidarytas()) return;

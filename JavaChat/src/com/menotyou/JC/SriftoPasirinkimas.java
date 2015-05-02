@@ -25,23 +25,45 @@ import javax.swing.DropMode;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SriftoPasirinkimas.
+ */
 public class SriftoPasirinkimas extends JDialog {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = -1686982470802696604L;
 
+	/** The m_pasirinktas sriftas. */
 	protected Font m_pasirinktasSriftas;
+	
+	/** The m_pasirinkto srifto pav. */
 	protected String m_pasirinktoSriftoPav;
+	
+	/** The m_pasirinkto srifto dydis. */
 	protected float m_pasirinktoSriftoDydis;
 
+	/** The demo tekstas. */
 	protected String demoTekstas = "[22:15:41] Demo prisijungė \n[22:15:44] Demo: Labas \n[22:16:15] Demo: Šiandien gražus oras! Niekio nuostabesnio nesu matęs!";
 
+	/** The m_pavadinimai. */
 	protected JComboBox<String> m_pavadinimai;
+	
+	/** The m_dydziai. */
 	protected JComboBox<String> m_dydziai;
 
+	/** The sriftu dydziai. */
 	protected String sriftuDydziai[] = { "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "30" };
 
+	/** The demo. */
 	protected JTextArea demo;
 
+	/**
+	 * Instantiates a new srifto pasirinkimas.
+	 *
+	 * @param f the f
+	 * @param dabartinis the dabartinis
+	 */
 	public SriftoPasirinkimas(Frame f, final Font dabartinis) {
 		super(f, "Teksto nustatymai", true);
 		addWindowListener(new WindowAdapter() {
@@ -134,10 +156,19 @@ public class SriftoPasirinkimas extends JDialog {
 		pack();
 		setLocationRelativeTo(null);
 	}
+	
+	/**
+	 * Nustatyk srifta.
+	 *
+	 * @param sriftas the sriftas
+	 */
 	public void nustatykSrifta(Font sriftas){
 		m_pasirinktasSriftas = sriftas;
 	}
 
+	/**
+	 * Demo perziura.
+	 */
 	protected void demoPerziura() {
 		m_pasirinktoSriftoPav = (String) m_pavadinimai.getSelectedItem();
 		m_pasirinktoSriftoDydis = Float.parseFloat((String) m_dydziai.getSelectedItem());
@@ -151,14 +182,29 @@ public class SriftoPasirinkimas extends JDialog {
 		pack();
 	}
 
+	/**
+	 * Gauk pasirinkto srifto pav.
+	 *
+	 * @return the string
+	 */
 	public String gaukPasirinktoSriftoPav() {
 		return m_pasirinktoSriftoPav;
 	}
 
+	/**
+	 * Gauk pasirinkto srifto dydi.
+	 *
+	 * @return the float
+	 */
 	public float gaukPasirinktoSriftoDydi() {
 		return m_pasirinktoSriftoDydis;
 	}
 
+	/**
+	 * Gauk pasirinkta srifta.
+	 *
+	 * @return the font
+	 */
 	public Font gaukPasirinktaSrifta() {
 		return m_pasirinktasSriftas;
 	}

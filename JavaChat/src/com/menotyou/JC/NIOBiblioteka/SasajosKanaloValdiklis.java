@@ -16,17 +16,43 @@ import com.menotyou.JC.NIOBiblioteka.Skaitytojai.GrynasPaketuSkaitytojas;
 import com.menotyou.JC.NIOBiblioteka.Skaitytojai.KanaloSkaitytojas;
 import com.menotyou.JC.NIOBiblioteka.Skaitytojai.PaketuSkaitytojas;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SasajosKanaloValdiklis.
+ */
 public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja {
 
+	/** The m_max eiles ilgis. */
 	private int m_maxEilesIlgis;
+	
+	/** The m_sujungimo laikas. */
 	private long m_sujungimoLaikas;
+	
+	/** The m_baitai eileje. */
 	private final AtomicLong m_baitaiEileje;
+	
+	/** The m_paketu eile. */
 	private ConcurrentLinkedQueue<Object> m_paketuEile;
+	
+	/** The m_paketu skaitytojas. */
 	private PaketuSkaitytojas m_paketuSkaitytojas;
+	
+	/** The m_sasajos stebetojas. */
 	private volatile SasajosStebetojas m_sasajosStebetojas;
+	
+	/** The m_kanalo skaitytojas. */
 	private final KanaloSkaitytojas m_kanaloSkaitytojas;
+	
+	/** The m_kanalo rasytojas. */
 	private final KanaloRasytojas m_kanaloRasytojas;
 
+	/**
+	 * Instantiates a new sasajos kanalo valdiklis.
+	 *
+	 * @param aptarnavimas the aptarnavimas
+	 * @param kanalas the kanalas
+	 * @param adresas the adresas
+	 */
 	public SasajosKanaloValdiklis(NIOAptarnavimas aptarnavimas, SelectableChannel kanalas, InetSocketAddress adresas) {
 		super(aptarnavimas, kanalas, adresas);
 		m_sasajosStebetojas = null;
@@ -39,14 +65,25 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		m_kanaloRasytojas = new KanaloRasytojas();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#rasyk(byte[])
+	 */
 	public boolean rasyk(byte[] paketas) {
 		return rasyk(paketas, null);
 	}
 
+	/**
+	 * Sujungtas.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean sujungtas() {
 		return gaukKanala().isConnected();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#rasyk(byte[], java.lang.Object)
+	 */
 	public boolean rasyk(byte[] paketas, Object zyme) {
 		long dabartinisEilesIlgis = m_baitaiEileje.addAndGet(paketas.length);
 		if (m_maxEilesIlgis > 0 && dabartinisEilesIlgis > m_maxEilesIlgis) {
@@ -58,11 +95,19 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#pridekIEile(java.lang.Runnable)
+	 */
 	public void pridekIEile(Runnable r) {
 		m_paketuEile.offer(r);
 		gaukNIOAptarnavima().pridekIEile(new SusidomejimoPridejimas(SelectionKey.OP_WRITE));
 	}
 
+	/**
+	 * Ispek apie gauta paketa.
+	 *
+	 * @param paketas the paketas
+	 */
 	private void ispekApieGautaPaketa(byte[] paketas) {
 		try {
 			if (m_sasajosStebetojas != null) m_sasajosStebetojas.paketasGautas(this, paketas);
@@ -71,6 +116,11 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		}
 	}
 
+	/**
+	 * Ispek apie isiusta paketa.
+	 *
+	 * @param zyme the zyme
+	 */
 	private void ispekApieIsiustaPaketa(Object zyme) {
 		try {
 			if (m_sasajosStebetojas != null) m_sasajosStebetojas.paketasIssiustas(this, zyme);
@@ -79,6 +129,9 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#paruostasSkaitymui()
+	 */
 	void paruostasSkaitymui() {
 		if (!atidarytas()) return;
 		//System.out.println("Pranesta kad galima skaityti iš " + gaukAdresa());
@@ -98,6 +151,11 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		}
 	}
 
+	/**
+	 * Uzpildyk siuntimu buferi.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	private void uzpildykSiuntimuBuferi() throws IOException {
 		if (m_kanaloRasytojas.tuscias()) {
 			Object kitasPaketas = m_paketuEile.poll();
@@ -119,6 +177,9 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#paruostasRasymui()
+	 */
 	void paruostasRasymui() {
 		try {
 		//	System.out.println("Pranesta kad galima rašyti " + gaukAdresa());
@@ -143,6 +204,9 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 	}
 
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#paruostasSujungimui()
+	 */
 	void paruostasSujungimui() {
 		//System.out.println("Pranesta kad galima baigti sujungi su" + gaukAdresa());
 		try {
@@ -156,30 +220,52 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 			issijunk(e);
 		}
 	}
+	
+	/**
+	 * Ispek kad buvo atsauktas.
+	 */
 	public void ispekKadBuvoAtsauktas(){
 		uzdaryk();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukNuskaitytuBaituSkaiciu()
+	 */
 	public long gaukNuskaitytuBaituSkaiciu() {
 		return m_kanaloSkaitytojas.gaukNuskaitytusBitus();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#gaukKanala()
+	 */
 	public SocketChannel gaukKanala() {
 		return (SocketChannel) super.gaukKanala();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukParasytuBaituSkaiciu()
+	 */
 	public long gaukParasytuBaituSkaiciu() {
 		return m_kanaloRasytojas.gaukKiekParasytaBaitu();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukLaikaNuoSujungimo()
+	 */
 	public long gaukLaikaNuoSujungimo() {
 		return m_sujungimoLaikas > 0 ? System.currentTimeMillis() - m_sujungimoLaikas : -1;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukRasymoEilesDydi()
+	 */
 	public long gaukRasymoEilesDydi() {
 		return m_baitaiEileje.get();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#toString()
+	 */
 	public String toString() {
 		try {
 			return gaukSasaja().toString();
@@ -188,10 +274,16 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukMaxEilesIlgi()
+	 */
 	public int gaukMaxEilesIlgi() {
 		return m_maxEilesIlgis;
 	}
 
+	/**
+	 * Ispek stebetoja del sujungimo.
+	 */
 	private void ispekStebetojaDelSujungimo() {
 		try {
 			if (m_sasajosStebetojas != null) m_sasajosStebetojas.rysysUztvirtintas(this);
@@ -200,6 +292,11 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		}
 	}
 
+	/**
+	 * Ispek stebetoja del atsijungimo.
+	 *
+	 * @param isimtis the isimtis
+	 */
 	private void ispekStebetojaDelAtsijungimo(Exception isimtis) {
 		try {
 			if (m_sasajosStebetojas != null) m_sasajosStebetojas.rysysNutrauktas(this, isimtis);
@@ -208,14 +305,23 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#nustatykMaxEilesIlgi(int)
+	 */
 	public void nustatykMaxEilesIlgi(int maxEilesIlgis) {
 		m_maxEilesIlgis = maxEilesIlgis;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#nustatykPaketuSkaitytoja(com.menotyou.JC.NIOBiblioteka.Skaitytojai.PaketuSkaitytojas)
+	 */
 	public void nustatykPaketuSkaitytoja(PaketuSkaitytojas paketuSkaitytojas) {
 		m_paketuSkaitytojas = paketuSkaitytojas;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#nustatykPaketuRasytoja(com.menotyou.JC.NIOBiblioteka.Rasytojai.PaketuRasytojas)
+	 */
 	public void nustatykPaketuRasytoja(final PaketuRasytojas paketuRasytojas) {
 		if (paketuRasytojas == null) throw new NullPointerException();
 		pridekIEile(new Runnable() {
@@ -225,6 +331,9 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#stebek(com.menotyou.JC.NIOBiblioteka.SasajosStebetojas)
+	 */
 	public void stebek(SasajosStebetojas stebetojas) {
 	//	System.out.println("Pradedama stebeti.");
 		pazymekKadStebetojasPriskirtas();
@@ -233,6 +342,9 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		gaukNIOAptarnavima().pridekIEile(new StebejimoPradziosIvykis(this, stebetojas == null ? SasajosStebetojas.NULL : stebetojas));
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#uzsidarykPoRasymo()
+	 */
 	public void uzsidarykPoRasymo() {
 		pridekIEile(new Runnable() {
 			public void run() {
@@ -242,16 +354,25 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukSasaja()
+	 */
 	public Socket gaukSasaja() {
 		return gaukKanala().socket();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#raktasPriskirtas()
+	 */
 	void raktasPriskirtas() {
 		if (!sujungtas()) {
 			pridekSusidomejima(SelectionKey.OP_CONNECT);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#issijunk(java.lang.Exception)
+	 */
 	protected void issijunk(Exception e) {
 		m_sujungimoLaikas = -1;
 		m_paketuEile.clear();
@@ -259,27 +380,56 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 		ispekStebetojaDelAtsijungimo(e);
 	}
 
+	/**
+	 * The Class SusidomejimoPridejimas.
+	 */
 	private class SusidomejimoPridejimas implements Runnable {
+		
+		/** The m_susidomejimas. */
 		private final int m_susidomejimas;
 
+		/**
+		 * Instantiates a new susidomejimo pridejimas.
+		 *
+		 * @param susidomejimas the susidomejimas
+		 */
 		private SusidomejimoPridejimas(int susidomejimas) {
 			m_susidomejimas = susidomejimas;
 		}
 
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
 		public void run() {
 			pridekSusidomejima(m_susidomejimas);
 		}
 	}
 
+	/**
+	 * The Class StebejimoPradziosIvykis.
+	 */
 	private class StebejimoPradziosIvykis implements Runnable {
+		
+		/** The m_naujas stebetojas. */
 		private final SasajosStebetojas m_naujasStebetojas;
+		
+		/** The m_valdiklis. */
 		private final SasajosKanaloValdiklis m_valdiklis;
 
+		/**
+		 * Instantiates a new stebejimo pradzios ivykis.
+		 *
+		 * @param valdiklis the valdiklis
+		 * @param stebetojas the stebetojas
+		 */
 		private StebejimoPradziosIvykis(SasajosKanaloValdiklis valdiklis, SasajosStebetojas stebetojas) {
 			m_valdiklis = valdiklis;
 			m_naujasStebetojas = stebetojas;
 		}
 
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
 		public void run() {
 	//		System.out.println("Pradedamas stebeti klientas " + m_valdiklis.gaukAdresa());
 			m_valdiklis.m_sasajosStebetojas = m_naujasStebetojas;
@@ -295,6 +445,9 @@ public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja
 			m_valdiklis.pridekSusidomejima(SelectionKey.OP_READ);
 		}
 
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		public String toString() {
 			return "Pradedama stebeti [" + m_naujasStebetojas + "]";
 		}

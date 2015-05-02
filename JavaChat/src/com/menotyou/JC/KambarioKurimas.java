@@ -17,17 +17,42 @@ import javax.swing.border.EmptyBorder;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KambarioKurimas.
+ */
 public class KambarioKurimas extends JFrame {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = -3747377694043578560L;
+	
+	/** The content pane. */
 	private JPanel contentPane;
+	
+	/** The m_pavadinimas. */
 	private JTextField m_pavadinimas;
+	
+	/** The m_pradine zinute. */
 	private JTextArea m_pradineZinute;
+	
+	/** The m_klientas. */
 	private NIOKlientas m_klientas;
+	
+	/** The langelis. */
 	private JScrollPane langelis;
+	
+	/** The progress bar. */
 	private JProgressBar progressBar;
+	
+	/** The btn kurti kam. */
 	private JButton btnKurtiKam;
 
+	/**
+	 * Instantiates a new kambario kurimas.
+	 *
+	 * @param klientoLangas the kliento langas
+	 * @param sriftas the sriftas
+	 */
 	public KambarioKurimas(final KlientoLangas klientoLangas, final Font sriftas) {
 		setTitle("Kambario kūrimas");
 		setResizable(false);
@@ -93,16 +118,33 @@ public class KambarioKurimas extends JFrame {
 		
 		setVisible(true);
 	}
+	
+	/**
+	 * Klaida.
+	 *
+	 * @param klaida the klaida
+	 */
 	public void klaida(String klaida){
 		JOptionPane.showMessageDialog(null, klaida, "Klaida!", JOptionPane.INFORMATION_MESSAGE);
 		progressBar.setVisible(false);
 		btnKurtiKam.setEnabled(true);
 	}
+	
+	/**
+	 * Pasalink.
+	 */
 	public void pasalink(){
 		progressBar.setVisible(false);
 		btnKurtiKam.setEnabled(true);
 		dispose();
 	}
+	
+	/**
+	 * Kambario uzklausa.
+	 *
+	 * @param pavadinimas the pavadinimas
+	 * @param pradineZinute the pradine zinute
+	 */
 	private void kambarioUzklausa(String pavadinimas, String pradineZinute){
 		if(m_pavadinimas.getText().trim().isEmpty()){
 			klaida("Kambario pavadinimas negali būti tuščias!");

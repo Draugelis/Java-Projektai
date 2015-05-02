@@ -15,15 +15,39 @@ import java.util.Arrays;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class VartotojoAutentifikacija.
+ */
 public final class VartotojoAutentifikacija {
 	
+	/** The va. */
 	private static VartotojoAutentifikacija VA;
+	
+	/** The Constant ITERACIJU_SKAICIUS. */
 	private final static int ITERACIJU_SKAICIUS = 1000;
+	
+	/** The Constant MAX_VARDO_ILGIS. */
 	private final static int MAX_VARDO_ILGIS = 30;
 	 
+	/**
+	 * Instantiates a new vartotojo autentifikacija.
+	 */
 	private VartotojoAutentifikacija(){
 		
 	}
+	
+	/**
+	 * Autentifikuok vartotoja.
+	 *
+	 * @param con the con
+	 * @param slaptazodis the slaptazodis
+	 * @param vardas the vardas
+	 * @return true, if successful
+	 * @throws SQLException the SQL exception
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public boolean autentifikuokVartotoja(Connection con, String slaptazodis, String vardas)
 			throws SQLException, NoSuchAlgorithmException, IOException{
 		PreparedStatement ps = null;
@@ -64,6 +88,14 @@ public final class VartotojoAutentifikacija {
 			close(ps);
 		}
 	}
+	
+	/**
+	 * Vardas uzimtas.
+	 *
+	 * @param con the con
+	 * @param vardas the vardas
+	 * @return true, if successful
+	 */
 	public boolean vardasUzimtas(Connection con, String vardas){
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -82,6 +114,17 @@ public final class VartotojoAutentifikacija {
 		}
 		return true;
 	}
+	
+	/**
+	 * Sukurk vartotoja.
+	 *
+	 * @param con the con
+	 * @param vardas the vardas
+	 * @param slaptazodis the slaptazodis
+	 * @return true, if successful
+	 * @throws SQLException the SQL exception
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 */
 	public boolean sukurkVartotoja(Connection con, String vardas, String slaptazodis)
 			throws SQLException, NoSuchAlgorithmException{
 		PreparedStatement ps = null;
@@ -108,6 +151,15 @@ public final class VartotojoAutentifikacija {
 			close(ps);
 		}
 	}
+	
+	/**
+	 * Uzkoduok slaptazodi.
+	 *
+	 * @param slaptazodis the slaptazodis
+	 * @param druska the druska
+	 * @return the byte[]
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 */
 	private synchronized byte[] UzkoduokSlaptazodi(String slaptazodis, byte[] druska)
 			throws NoSuchAlgorithmException{
 		MessageDigest digest = MessageDigest.getInstance("SHA-1");
@@ -127,18 +179,43 @@ public final class VartotojoAutentifikacija {
 		return ivestis;
 	}
 
+	/**
+	 * Gauk va valdikli.
+	 *
+	 * @return the vartotojo autentifikacija
+	 */
 	public static synchronized VartotojoAutentifikacija gaukVAValdikli(){
 		if(VA == null)
 			VA = new VartotojoAutentifikacija();
 		return VA;
 	}
+	
+	/**
+	 * Base64 to string.
+	 *
+	 * @param B the b
+	 * @return the string
+	 */
 	public String Base64ToString(byte[] B) {
 	    return StringUtils.newStringUtf8(Base64.decodeBase64(B));
 	}
+	
+	/**
+	 * String to base64.
+	 *
+	 * @param s the s
+	 * @return the byte[]
+	 */
 	public byte[] StringToBase64(String s) {
 	    return Base64.encodeBase64(StringUtils.getBytesUtf8(s));
 	}
-	 public void close(Statement ps) {
+	 
+ 	/**
+ 	 * Close.
+ 	 *
+ 	 * @param ps the ps
+ 	 */
+ 	public void close(Statement ps) {
 	       if (ps!=null){
 	           try {
 	               ps.close();
@@ -147,7 +224,12 @@ public final class VartotojoAutentifikacija {
 	       }
 	   }
 	 
-	 public void close(ResultSet rs) {
+	 /**
+ 	 * Close.
+ 	 *
+ 	 * @param rs the rs
+ 	 */
+ 	public void close(ResultSet rs) {
 	     if (rs!=null){
 	         try {
 	             rs.close();

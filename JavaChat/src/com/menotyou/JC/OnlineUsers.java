@@ -10,12 +10,24 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class OnlineUsers.
+ */
 public class OnlineUsers extends JFrame {
 	
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+	
+	/** The content pane. */
 	private JPanel contentPane;
+	
+	/** The list. */
 	private JList<String> list;
 
+	/**
+	 * Instantiates a new online users.
+	 */
 	public OnlineUsers() {
 		setType(Type.UTILITY);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -44,6 +56,11 @@ public class OnlineUsers extends JFrame {
 		list.setFont(new Font("Times Now Roman", 0, 18));
 	}
 	
+	/**
+	 * Update.
+	 *
+	 * @param users the users
+	 */
 	public void update(String[] users) {
 		list.setListData(users);
 	}

@@ -12,18 +12,51 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.binary.StringUtils;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class VartotojoAutentifikacija.
+ */
 public final class VartotojoAutentifikacija {
 	
+	/** The va. */
 	private static VartotojoAutentifikacija VA;
+	
+	/** The Constant ITERACIJU_SKAICIUS. */
 	private final static int ITERACIJU_SKAICIUS = 1000;
 	 
+	/**
+	 * Instantiates a new vartotojo autentifikacija.
+	 */
 	private VartotojoAutentifikacija(){
 		
 	}
+	
+	/**
+	 * Uzkoduok slaptazodi.
+	 *
+	 * @param slaptazodis the slaptazodis
+	 * @param druska the druska
+	 * @param algoritmas the algoritmas
+	 * @return the string
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 * @throws DecoderException the decoder exception
+	 */
 	public synchronized String UzkoduokSlaptazodi(String slaptazodis, String druska, String algoritmas)
 			throws NoSuchAlgorithmException, DecoderException{
 		return UzkoduokSlaptazodi(slaptazodis,druska, algoritmas, ITERACIJU_SKAICIUS);
 	}
+	
+	/**
+	 * Uzkoduok slaptazodi.
+	 *
+	 * @param slaptazodis the slaptazodis
+	 * @param druska the druska
+	 * @param algoritmas the algoritmas
+	 * @param It_skaicius the it_skaicius
+	 * @return the string
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 * @throws DecoderException the decoder exception
+	 */
 	public synchronized String UzkoduokSlaptazodi(String slaptazodis, String druska, String algoritmas, int It_skaicius)
 			throws NoSuchAlgorithmException, DecoderException{
 		MessageDigest digest = MessageDigest.getInstance(algoritmas);
@@ -43,6 +76,11 @@ public final class VartotojoAutentifikacija {
 		return Hex.encodeHexString(ivestis);
 	}
 
+	/**
+	 * Gauk va valdikli.
+	 *
+	 * @return the vartotojo autentifikacija
+	 */
 	public static synchronized VartotojoAutentifikacija gaukVAValdikli(){
 		if(VA == null)
 			VA = new VartotojoAutentifikacija();

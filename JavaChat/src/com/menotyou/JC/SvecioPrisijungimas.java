@@ -18,24 +18,53 @@ import javax.swing.SwingConstants;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SvecioPrisijungimas.
+ */
 public class SvecioPrisijungimas extends JFrame {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 8952323351211994022L;
+	
+	/** The content pane. */
 	private JPanel contentPane;
+	
+	/** The txt vardas. */
 	private JTextField txtVardas;
+	
+	/** The btn prisijungti. */
 	private JButton btnPrisijungti;
+	
+	/** The lbl vardas. */
 	private JLabel lblVardas;
+	
+	/** The kl. */
 	private KlientoLangas kl;
+	
+	/** The pswd laukelis. */
 	private JPasswordField pswdLaukelis;
+	
+	/** The progress bar. */
 	private JProgressBar progressBar;
+	
+	/** The Krovimosi_tekstas. */
 	private JLabel Krovimosi_tekstas;
 
 	
+	/**
+	 * Instantiates a new svecio prisijungimas.
+	 *
+	 * @param kl the kl
+	 */
 	public SvecioPrisijungimas(KlientoLangas kl) {
 		sukurkLanga();
 		this.kl = kl;
 	}
 	
+	/**
+	 * Sukurk langa.
+	 */
 	public void sukurkLanga(){
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -103,8 +132,13 @@ public class SvecioPrisijungimas extends JFrame {
 		Krovimosi_tekstas.setBounds(35, 283, 219, 14);
 		Krovimosi_tekstas.setVisible(false);
 		contentPane.add(Krovimosi_tekstas);
-		setVisible(true);
 	}
+	
+	/**
+	 * Klaida.
+	 *
+	 * @param klaida the klaida
+	 */
 	public void klaida(String klaida){
 		JOptionPane.showMessageDialog(null, klaida, "Klaida!", JOptionPane.INFORMATION_MESSAGE);
 		KeistiKrovimoTeksta("Siunčiama serveriui..", 0);
@@ -113,18 +147,32 @@ public class SvecioPrisijungimas extends JFrame {
 		btnPrisijungti.setEnabled(true);
 	}
 	
+	/**
+	 * Prisijungimo uzbaigimas.
+	 *
+	 * @param vardas the vardas
+	 */
 	public void PrisijungimoUzbaigimas(String vardas){
 		System.out.println("Prisijungta!");
-		kl.sukurkKambarioInterfeisa("Pagrindinis");
 		kl.setTitle("JC klientas - " + vardas);
 		kl.setVisible(true);
 		this.dispose();
 	}
+	
+	/**
+	 * Keisti krovimo teksta.
+	 *
+	 * @param tekstas the tekstas
+	 * @param n the n
+	 */
 	public void KeistiKrovimoTeksta(String tekstas, int n){
 		Krovimosi_tekstas.setText(tekstas);
 		progressBar.setValue(n);
 	}
 	
+	/**
+	 * Prisijungimas.
+	 */
 	public void Prisijungimas(){
 		String vardas = txtVardas.getText().trim();
 		String slaptazodis = (new String(pswdLaukelis.getPassword())).trim();

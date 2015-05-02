@@ -9,15 +9,38 @@ import java.nio.channels.SocketChannel;
 import com.menotyou.JC.NIOBiblioteka.NIOAptarnavimas;
 import com.menotyou.JC.NIOBiblioteka.NIOIrankiai;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class KanaloSkaitytojas.
+ */
 public class KanaloSkaitytojas {
+	
+	/** The m_aptarnavimas. */
 	private final NIOAptarnavimas m_aptarnavimas;
+	
+	/** The m_ankstesni bitai. */
 	private ByteBuffer m_ankstesniBitai;
+	
+	/** The m_nuskaityti bitai. */
 	private long m_nuskaitytiBitai;
 	
+	/**
+	 * Instantiates a new kanalo skaitytojas.
+	 *
+	 * @param aptarnavimas the aptarnavimas
+	 */
 	public KanaloSkaitytojas(NIOAptarnavimas aptarnavimas){
 		m_aptarnavimas = aptarnavimas;
 		m_nuskaitytiBitai = 0;
 	}
+	
+	/**
+	 * Skaityk.
+	 *
+	 * @param kanalas the kanalas
+	 * @return the int
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public int skaityk(SocketChannel kanalas) throws IOException{
 		ByteBuffer buferis = gaukBuferi();
 		
@@ -43,6 +66,9 @@ public class KanaloSkaitytojas {
 		return nuskaityta;
 	}
 	
+	/**
+	 * Supakuok.
+	 */
 	public void supakuok(){
 		ByteBuffer buferis = gaukBuferi();
 		if(buferis.remaining() > 0){
@@ -50,10 +76,20 @@ public class KanaloSkaitytojas {
 		}
 	}
 	
+	/**
+	 * Gauk nuskaitytus bitus.
+	 *
+	 * @return the long
+	 */
 	public long gaukNuskaitytusBitus(){
 		return m_nuskaitytiBitai;
 	}
 	
+	/**
+	 * Gauk buferi.
+	 *
+	 * @return the byte buffer
+	 */
 	public ByteBuffer gaukBuferi(){
 		return m_aptarnavimas.gaukBendraBuferi();
 	}

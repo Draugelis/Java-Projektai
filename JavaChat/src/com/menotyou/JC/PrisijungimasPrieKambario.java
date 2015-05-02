@@ -14,15 +14,38 @@ import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
 import javax.swing.SwingConstants;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PrisijungimasPrieKambario.
+ */
 public class PrisijungimasPrieKambario extends JFrame {
+	
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 8979555935226577804L;
+	
+	/** The content pane. */
 	private JPanel contentPane;
+	
+	/** The klientas. */
 	private NIOKlientas klientas;
+	
+	/** The btn new button. */
 	private JButton btnNewButton;
+	
+	/** The lbl pavadinimas. */
 	private JLabel lblPavadinimas;
+	
+	/** The progress bar. */
 	private JProgressBar progressBar;
+	
+	/** The m_kambariai. */
 	private JComboBox<String> m_kambariai;
 
+	/**
+	 * Instantiates a new prisijungimas prie kambario.
+	 *
+	 * @param klientoLangas the kliento langas
+	 */
 	public PrisijungimasPrieKambario(final KlientoLangas klientoLangas) {
 		setTitle("Prisijungimas prie kambario");
 		setResizable(false);
@@ -64,11 +87,23 @@ public class PrisijungimasPrieKambario extends JFrame {
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
+	
+	/**
+	 * Klaida.
+	 *
+	 * @param klaida the klaida
+	 */
 	public void klaida(String klaida){
 		JOptionPane.showMessageDialog(null, klaida, "Klaida!", JOptionPane.INFORMATION_MESSAGE);
 		progressBar.setVisible(false);
 		btnNewButton.setEnabled(true);
 	}
+	
+	/**
+	 * Nustatyk kambarius.
+	 *
+	 * @param kambariai the kambariai
+	 */
 	public void nustatykKambarius(String[] kambariai){
 		m_kambariai.removeAllItems();
 		for (int i = 0; i < kambariai.length; i++){
@@ -84,11 +119,21 @@ public class PrisijungimasPrieKambario extends JFrame {
 			btnNewButton.setEnabled(true);
 		}
 	}
+	
+	/**
+	 * Pasalink.
+	 */
 	public void pasalink(){
 		progressBar.setVisible(false);
 		btnNewButton.setEnabled(true);
 		dispose();
 	}
+	
+	/**
+	 * Kambario uzklausa.
+	 *
+	 * @param pavadinimas the pavadinimas
+	 */
 	private void kambarioUzklausa(String pavadinimas) {
 		klientas.siuskZinute("<K+>" + pavadinimas);
 		progressBar.setVisible(false);

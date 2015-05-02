@@ -19,19 +19,40 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class JCPrisijungimas.
+ */
 public class JCPrisijungimas extends JFrame {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+	
+	/** The content pane. */
 	private JPanel contentPane;
 
+	/** The serverio pavadinimas. */
 	private String SERVERIO_PAVADINIMAS = "localhost";
+	
+	/** The serverio portas. */
 	private int SERVERIO_PORTAS = 8192;
+	
+	/** The skaityti. */
 	private BufferedReader skaityti;
+	
+	/** The rasyti. */
 	private PrintWriter rasyti;
 
+	/**
+	 * Instantiates a new JC prisijungimas.
+	 */
 	public JCPrisijungimas() {
 		sukurkLanga();
 	}
+	
+	/**
+	 * Sukurk langa.
+	 */
 	public void sukurkLanga(){
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -74,11 +95,17 @@ public class JCPrisijungimas extends JFrame {
 	}
 
 
+	/**
+	 * Login.
+	 */
 	public void login() {
 		dispose();
 		//Todo: Login veiksmas
 	}
 	
+	/**
+	 * Svecias.
+	 */
 	public void svecias(){
 		dispose();
 		
