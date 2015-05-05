@@ -2,25 +2,18 @@ package com.menotyou.JC.NIOBiblioteka.Rasytojai;
 
 import java.nio.ByteBuffer;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class GrynasPaketuRasytojas.
+ *  Numatytas paketų rašytojas. Jis reikalingas tik tuomet kai nėra priskirtas
+ *  norimas paketų rašytojas.
  */
 public class GrynasPaketuRasytojas implements PaketuRasytojas {
-	
-	/** The numatytasis. */
-	public static GrynasPaketuRasytojas NUMATYTASIS = new GrynasPaketuRasytojas();
-	
-	/**
-	 * Instantiates a new grynas paketu rasytojas.
-	 */
-	public GrynasPaketuRasytojas(){}
+    public static GrynasPaketuRasytojas NUMATYTASIS = new GrynasPaketuRasytojas();
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.Rasytojai.PaketuRasytojas#rasyk(java.nio.ByteBuffer[])
-	 */
-	public ByteBuffer[] rasyk(ByteBuffer[] buferis) {
-		return buferis;
-	}
+    public GrynasPaketuRasytojas() {
+    }
+
+    public ByteBuffer[] rasyk(ByteBuffer[] buferis) {
+        return buferis;
+    }
 
 }

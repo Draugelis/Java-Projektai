@@ -1,58 +1,24 @@
 package com.menotyou.JC.NIOBiblioteka;
+
 import java.net.InetSocketAddress;
 
-
-// TODO: Auto-generated Javadoc
 /**
- * The Interface NIOAbstraktiSasaja.
+ * Valdiklis (Interface) NIOAbstraktiSasaja kurio savybes paveldės
+ * tiek NIOServerioSasaja tiek NIOSasaja.
  */
 public interface NIOAbstraktiSasaja {
 
+    void uzdaryk();
 
-	/**
-	 * Uzdaryk.
-	 */
-	void uzdaryk();
-	
-	/**
-	 * Gauk adresa.
-	 *
-	 * @return the inet socket address
-	 */
-	InetSocketAddress gaukAdresa();
-	
-	/**
-	 * Atidarytas.
-	 *
-	 * @return true, if successful
-	 */
-	boolean atidarytas();
-	
-	/**
-	 * Gauk ip.
-	 *
-	 * @return the string
-	 */
-	String gaukIp();
-	
-	/**
-	 * Gauk porta.
-	 *
-	 * @return the int
-	 */
-	int gaukPorta();
-	
-	/**
-	 * Gauk zyme.
-	 *
-	 * @return the object
-	 */
-	Object gaukZyme();
-	
-	/**
-	 * Nustatyk zyme.
-	 *
-	 * @param zyme the zyme
-	 */
-	void nustatykZyme(Object zyme);
+    InetSocketAddress gaukAdresa();
+
+    boolean atidarytas();
+
+    String gaukIp();
+
+    int gaukPorta();
+
+    Object gaukZyme();
+
+    void nustatykZyme(Object zyme);
 }

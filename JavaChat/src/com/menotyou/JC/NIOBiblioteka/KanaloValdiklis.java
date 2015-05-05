@@ -5,294 +5,274 @@ import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class KanaloValdiklis.
+ * KanaloValdiklis atsakingas už visas kanalo operacijas ir suteikai kanaliu
+ * funkcionalumą.
+ * Ši klasė yra bendra forma SasajosKanaloValdikliui ir ServerioSasajosKanaloValdikliui.
+ * Tai leidžia NIOAptarnavimas objekte naudoti bendrą KanaloValdiklis objektą
+ * neišskiriant šių dviejų klasių.
  */
 public abstract class KanaloValdiklis implements NIOAbstraktiSasaja {
 
-	/** The m_aptarnavimas. */
-	private final NIOAptarnavimas m_aptarnavimas;
-	
-	/** The m_ip. */
-	private final String m_ip;
-	
-	/** The m_adresas. */
-	private final InetSocketAddress m_adresas;
-	
-	/** The m_portas. */
-	private final int m_portas;
-	
-	/** The m_kanalas. */
-	private final SelectableChannel m_kanalas;
-	
-	/** The m_atidarytas. */
-	private volatile boolean m_atidarytas;
-	
-	/** The m_raktas. */
-	private volatile SelectionKey m_raktas;
-	
-	/** The m_dominancios operacijos. */
-	private volatile int m_dominanciosOperacijos;
-	
-	/** The m_stebetojas priskirtas. */
-	private boolean m_stebetojasPriskirtas;
-	
-	/** The m_zyme. */
-	private Object m_zyme;
+    private final NIOAptarnavimas m_aptarnavimas;
 
-	/**
-	 * Instantiates a new kanalo valdiklis.
-	 *
-	 * @param aptarnavimas the aptarnavimas
-	 * @param kanalas the kanalas
-	 * @param adresas the adresas
-	 */
-	protected KanaloValdiklis(NIOAptarnavimas aptarnavimas, SelectableChannel kanalas, InetSocketAddress adresas) {
-		m_kanalas = kanalas;
-		m_aptarnavimas = aptarnavimas;
-		m_atidarytas = true;
-		m_raktas = null;
-		m_dominanciosOperacijos = 0;
-		m_adresas = adresas;
-		m_ip = adresas.getAddress().getHostAddress();
-		m_portas = adresas.getPort();
-		m_zyme = null;
-	}
+    /** Kanalo ip adresas.*/
+    private final String m_ip;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOAbstraktiSasaja#uzdaryk()
-	 */
-	public void uzdaryk() {
-		uzdaryk(null);
-	}
+    /** Kanalo adresas. */
+    private final InetSocketAddress m_adresas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOAbstraktiSasaja#gaukAdresa()
-	 */
-	public InetSocketAddress gaukAdresa() {
-		return m_adresas;
-	}
+    /** Kanalo portas (Port). */
+    private final int m_portas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOAbstraktiSasaja#atidarytas()
-	 */
-	public boolean atidarytas() {
-		return m_atidarytas;
-	}
+    /** Kanalas. */
+    private final SelectableChannel m_kanalas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOAbstraktiSasaja#gaukIp()
-	 */
-	public String gaukIp() {
-		return m_ip;
-	}
+    /** Boolean kintamasis nusakantis ar kanalas atidarytas.
+     *  Volatile reiškia lengvai keičiamas iš kelių procesų.
+     */
+    private volatile boolean m_atidarytas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOAbstraktiSasaja#gaukPorta()
-	 */
-	public int gaukPorta() {
-		return m_portas;
-	}
+    /** Raktas su kuriuo yra susietas šis kanalas. */
+    private volatile SelectionKey m_raktas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOAbstraktiSasaja#gaukZyme()
-	 */
-	public Object gaukZyme() {
-		return m_zyme;
-	}
+    /** Operacijos kurias gali atlikti šis kanalas. */
+    private volatile int m_dominanciosOperacijos;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOAbstraktiSasaja#nustatykZyme(java.lang.Object)
-	 */
-	public void nustatykZyme(Object zyme) {
-		m_zyme = zyme;
-	}
+    /** Boolean kintamasis nusakantis ar šis kanalas yra stebimas
+     * ir iš jo laikiama duomenų.*/
+    private boolean m_stebetojasPriskirtas;
 
-	/**
-	 * Gauk nio aptarnavima.
-	 *
-	 * @return the NIO aptarnavimas
-	 */
-	protected NIOAptarnavimas gaukNIOAptarnavima() {
-		return m_aptarnavimas;
-	}
+    /** Kanalo asmeninė žymė. */
+    private Object m_zyme;
 
-	/**
-	 * Pazymek kad stebetojas priskirtas.
-	 */
-	protected void pazymekKadStebetojasPriskirtas() {
-		System.out.println("Zymima kad stebetojas priskirtas.");
-		synchronized (this) {
-			if (m_stebetojasPriskirtas) throw new IllegalStateException("Steb�tojas jau priskirtas");
-			m_stebetojasPriskirtas = true;
-		}
-	}
+    /**
+     * Sukuriamas naujas kanalo valdiklis.
+     *
+     * @param aptarnavimas -> NIOAptarnavimas objektas kuriame saugomas kanalas.
+     * @param kanalas -> kanalas kuriam priskiriamas valdiklis.
+     * @param adresas -> InetSocketAdress objektas iš kurio gaunama informacija apie kanalo šaltinį.
+     */
+    protected KanaloValdiklis(NIOAptarnavimas aptarnavimas, SelectableChannel kanalas, InetSocketAddress adresas) {
+        m_kanalas = kanalas;
+        m_aptarnavimas = aptarnavimas;
+        m_atidarytas = true;
+        m_raktas = null;
+        m_dominanciosOperacijos = 0;
+        m_adresas = adresas;
+        m_ip = adresas.getAddress().getHostAddress();
+        m_portas = adresas.getPort();
+        m_zyme = null;
+    }
 
-	/**
-	 * Paruostas skaitymui.
-	 */
-	void paruostasSkaitymui() {
-		throw new UnsupportedOperationException(getClass() + " nepalaiko skaitymo");
-	}
+    public void uzdaryk() {
+        uzdaryk(null);
+    }
 
-	/**
-	 * Paruostas rasymui.
-	 */
-	void paruostasRasymui() {
-		throw new UnsupportedOperationException(getClass() + " nepalaiko ra�ymo");
-	}
+    public InetSocketAddress gaukAdresa() {
+        return m_adresas;
+    }
 
-	/**
-	 * Paruostas priemimui.
-	 */
-	void paruostasPriemimui() {
-		throw new UnsupportedOperationException(getClass() + " nepalaiko pri�mimo");
-	}
+    public boolean atidarytas() {
+        return m_atidarytas;
+    }
 
-	/**
-	 * Paruostas sujungimui.
-	 */
-	void paruostasSujungimui() {
-		throw new UnsupportedOperationException(getClass() + " nepalaiko sujungimo");
-	}
+    public String gaukIp() {
+        return m_ip;
+    }
 
-	/**
-	 * Gauk kanala.
-	 *
-	 * @return the selectable channel
-	 */
-	protected SelectableChannel gaukKanala() {
-		return m_kanalas;
-	}
+    public int gaukPorta() {
+        return m_portas;
+    }
 
-	/**
-	 * Nustatyk rakta.
-	 *
-	 * @param raktas the raktas
-	 */
-	void nustatykRakta(SelectionKey raktas) {
-		if (m_raktas != null) throw new IllegalStateException("Bandyta priskirti rakta dukart");
-		m_raktas = raktas;
-		if (!atidarytas()) {
-			NIOIrankiai.tyliaiAtsaukRakta(m_raktas);
-			return;
-		}
-		raktasPriskirtas();
-		sinchronizuokRaktoDominanciasOperacijas();
-	}
+    public Object gaukZyme() {
+        return m_zyme;
+    }
 
-	/**
-	 * Gauk rakta.
-	 *
-	 * @return the selection key
-	 */
-	protected SelectionKey gaukRakta() {
-		return m_raktas;
-	}
+    public void nustatykZyme(Object zyme) {
+        m_zyme = zyme;
+    }
 
-	/**
-	 * Raktas priskirtas.
-	 */
-	abstract void raktasPriskirtas();
+    protected NIOAptarnavimas gaukNIOAptarnavima() {
+        return m_aptarnavimas;
+    }
 
-	/**
-	 * Uzdaryk.
-	 *
-	 * @param isimtis the isimtis
-	 */
-	protected void uzdaryk(Exception isimtis) {
-		if (atidarytas()) {
-			gaukNIOAptarnavima().pridekIEile(new UzdarymoIvykis(this, isimtis));
-		}
-	}
+    /**
+     * Metodas pažymi, kad kanalo stebėtojas buvo priskirtas.
+     */
+    protected void pazymekKadStebetojasPriskirtas() {
+        System.out.println("Zymima kad stebetojas priskirtas.");
+        synchronized (this) {
+            if (m_stebetojasPriskirtas) throw new IllegalStateException("Stebėtojas jau priskirtas");
+            m_stebetojasPriskirtas = true;
+        }
+    }
 
-	/**
-	 * Sinchronizuok rakto dominancias operacijas.
-	 */
-	private void sinchronizuokRaktoDominanciasOperacijas(){
-		if(m_raktas != null){
-			try{
-				int senosOperacijos = m_raktas.interestOps();
-				if((m_dominanciosOperacijos & SelectionKey.OP_CONNECT) != 0){
-					m_raktas.interestOps(SelectionKey.OP_CONNECT);
-				}else{
-					m_raktas.interestOps(m_dominanciosOperacijos);
-				}
-				if(m_raktas.interestOps() != senosOperacijos){
-					m_aptarnavimas.pabusk();
-				}
-			} catch(CancelledKeyException e){
-				
-			}
-		}
-	}
-	
-	/**
-	 * Panaikink susidomejima.
-	 *
-	 * @param susidomejimas the susidomejimas
-	 */
-	protected void panaikinkSusidomejima(int susidomejimas){
-		m_dominanciosOperacijos &= ~susidomejimas;
-		sinchronizuokRaktoDominanciasOperacijas();
-	}
-	
-	/**
-	 * Pridek susidomejima.
-	 *
-	 * @param susidomejimas the susidomejimas
-	 */
-	protected void pridekSusidomejima(int susidomejimas){
-		m_dominanciosOperacijos |= susidomejimas;
-		sinchronizuokRaktoDominanciasOperacijas();
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString(){
-		return m_ip + ":" + m_portas;
-	}
-	
-	/**
-	 * Issijunk.
-	 *
-	 * @param e the e
-	 */
-	protected abstract void issijunk(Exception e);
-	
-	/**
-	 * The Class UzdarymoIvykis.
-	 */
-	private static class UzdarymoIvykis implements Runnable{
-		
-		/** The m_valdiklis. */
-		private final KanaloValdiklis m_valdiklis;
-		
-		/** The m_isimtis. */
-		private final Exception m_isimtis;
-		
-		/**
-		 * Instantiates a new uzdarymo ivykis.
-		 *
-		 * @param valdiklis the valdiklis
-		 * @param e the e
-		 */
-		private UzdarymoIvykis(KanaloValdiklis valdiklis, Exception e){
-			m_valdiklis = valdiklis;
-			m_isimtis = e;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run(){
-			if(m_valdiklis.atidarytas()){
-				m_valdiklis.m_atidarytas = false;
-				NIOIrankiai.tyliaiUzdaryRaktaIrKanala(m_valdiklis.gaukRakta(), m_valdiklis.gaukKanala());
-				m_valdiklis.issijunk(m_isimtis);
-			}
-		}
-	}
+    /**
+     * Šis metodas bus relizuojamas  kitose klasėse.
+     */
+    void paruostasSkaitymui() {
+        throw new UnsupportedOperationException(getClass() + " nepalaiko skaitymo");
+    }
+
+    /**
+     * Šis metodas bus relizuojamas  kitose klasėse.
+     */
+    void paruostasRasymui() {
+        throw new UnsupportedOperationException(getClass() + " nepalaiko rašymo");
+    }
+
+    /**
+     * Šis metodas bus relizuojamas  kitose klasėse.
+     */
+    void paruostasPriemimui() {
+        throw new UnsupportedOperationException(getClass() + " nepalaiko priėmimo");
+    }
+
+    /**
+     * Šis metodas bus relizuojamas  kitose klasėse.
+     */
+    void paruostasSujungimui() {
+        throw new UnsupportedOperationException(getClass() + " nepalaiko sujungimo");
+    }
+
+    protected SelectableChannel gaukKanala() {
+        return m_kanalas;
+    }
+
+    /**
+     * Metodas nustato kanalo raktą.
+     * Šį metodą paveldi tiek SasajosKanaloValdiklis, tiek ServerioSasajosKanaloValdiklis.
+     * 
+     * @param raktas -> raktas su kuriuo susiejamas kanalas.
+     */
+    void nustatykRakta(SelectionKey raktas) {
+        if (m_raktas != null) throw new IllegalStateException("Bandyta priskirti raktą dukart");
+        m_raktas = raktas;
+        if (!atidarytas()) {
+            NIOIrankiai.tyliaiAtsaukRakta(m_raktas);
+            return;
+        }
+        raktasPriskirtas();
+        sinchronizuokRaktoDominanciasOperacijas();
+    }
+
+    protected SelectionKey gaukRakta() {
+        return m_raktas;
+    }
+
+    /**
+     * metodas bus realizuojamas kitose klasėse.
+     */
+    abstract void raktasPriskirtas();
+
+    /**
+     * Metodas skirtas uždaryti kanalą.
+     * Jei nenurodoma iššimtis, kanalas uždaromas
+     * tyliai.
+     *
+     * @param isimtis -> Iššimtis dėl kurios uždaromas kanalas.
+     */
+    protected void uzdaryk(Exception isimtis) {
+        if (atidarytas()) {
+            gaukNIOAptarnavima().pridekIEile(new UzdarymoIvykis(this, isimtis));
+        }
+    }
+
+    /**
+     * Metodas skirtas sinchronizuoti kanalo operacijas.
+     * Pagrinde naudojamas tuomet kai reikia pažymėti, kad
+     * kanalas jau prijungtas ir operacija OP_CONNECT nebedomina.
+     */
+    private void sinchronizuokRaktoDominanciasOperacijas() {
+        if (m_raktas != null) {
+            try {
+                int senosOperacijos = m_raktas.interestOps();
+                if ((m_dominanciosOperacijos & SelectionKey.OP_CONNECT) != 0) {
+                    m_raktas.interestOps(SelectionKey.OP_CONNECT);
+                } else {
+                    m_raktas.interestOps(m_dominanciosOperacijos);
+                }
+                if (m_raktas.interestOps() != senosOperacijos) {
+                    m_aptarnavimas.pabusk();
+                }
+            } catch (CancelledKeyException e) {
+
+            }
+        }
+    }
+
+    /**
+     * Naudojamasi bitwise operacija & ir taip iš
+     * skaičiaus susidomėjimas pašalinami 
+     * nereikalingos operacijos bitai.
+     * ~ yra anti ženklas 0000 0001 virsta 1111 1110.
+     * pvz. 
+     *       0111 0110 $= ~0000 0110
+     * tuomet: 
+     * 		 0111 0110 $= 1111 1001
+     * lygu: 
+     * 		 0111 0000
+     *
+     * @param susidomejimas -> skaičius kurį norima pašalinti.
+     */
+    protected void panaikinkSusidomejima(int susidomejimas) {
+        m_dominanciosOperacijos &= ~susidomejimas;
+        sinchronizuokRaktoDominanciasOperacijas();
+    }
+
+    /**
+     * Naudojamasi bitwise operacija | ir taip pridedami
+     * skaičius susidomėjimas bitai į dominančias operacijas.
+     * 
+     * pvz. 
+     *       0111 0000 |= 0000 0110
+     * lygu: 
+     * 		 0111 0110
+     *
+     * @param susidomejimas -> skaičius kuri norima pridėti
+     */
+    protected void pridekSusidomejima(int susidomejimas) {
+        m_dominanciosOperacijos |= susidomejimas;
+        sinchronizuokRaktoDominanciasOperacijas();
+    }
+
+    public String toString() {
+        return m_ip + ":" + m_portas;
+    }
+
+    /**
+     * metodas bus realizuojamas kitose klasėse.
+     *
+     * @param e -> išimtis dėl kurios išjungiamas kanalo valdiklis.
+     */
+    protected abstract void issijunk(Exception e);
+
+    /**
+     * Privati klasė kuri talpina įvykį kuris turėtų uždaryti kanalą.
+     */
+    private static class UzdarymoIvykis implements Runnable {
+
+        private final KanaloValdiklis m_valdiklis;
+        private final Exception m_isimtis;
+
+        /**
+         * Sukuriamas naujas įvykis
+         *
+         * @param valdiklis -> valdiklis kurį ketinama uždaryti.
+         * @param e -> iššimtis kuri yra uždarymo priežastis.
+         */
+        private UzdarymoIvykis(KanaloValdiklis valdiklis, Exception e) {
+            m_valdiklis = valdiklis;
+            m_isimtis = e;
+        }
+
+        public void run() {
+            if (m_valdiklis.atidarytas()) {
+                m_valdiklis.m_atidarytas = false;
+                NIOIrankiai.tyliaiUzdarykRaktaIrKanala(m_valdiklis.gaukRakta(), m_valdiklis.gaukKanala());
+                m_valdiklis.issijunk(m_isimtis);
+            }
+        }
+    }
 }

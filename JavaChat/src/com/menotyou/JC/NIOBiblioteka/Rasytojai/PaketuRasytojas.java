@@ -2,17 +2,11 @@ package com.menotyou.JC.NIOBiblioteka.Rasytojai;
 
 import java.nio.ByteBuffer;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface PaketuRasytojas.
+ * Valdiklis(interface) kuris apibrėžiai visiems ateityje kuriamiems paketų
+ * rašytojams reikalingas funkcijas.
  */
 public interface PaketuRasytojas {
-	
-	/**
-	 * Rasyk.
-	 *
-	 * @param buferis the buferis
-	 * @return the byte buffer[]
-	 */
-	ByteBuffer[] rasyk(ByteBuffer[] buferis);
+
+    ByteBuffer[] rasyk(ByteBuffer[] buferis);
 }

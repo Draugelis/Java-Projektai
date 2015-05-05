@@ -16,441 +16,362 @@ import com.menotyou.JC.NIOBiblioteka.Skaitytojai.GrynasPaketuSkaitytojas;
 import com.menotyou.JC.NIOBiblioteka.Skaitytojai.KanaloSkaitytojas;
 import com.menotyou.JC.NIOBiblioteka.Skaitytojai.PaketuSkaitytojas;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class SasajosKanaloValdiklis.
+ * Ši klasė skirtas valdyti kliento sasajos kanalą.
  */
 public class SasajosKanaloValdiklis extends KanaloValdiklis implements NIOSasaja {
 
-	/** The m_max eiles ilgis. */
-	private int m_maxEilesIlgis;
-	
-	/** The m_sujungimo laikas. */
-	private long m_sujungimoLaikas;
-	
-	/** The m_baitai eileje. */
-	private final AtomicLong m_baitaiEileje;
-	
-	/** The m_paketu eile. */
-	private ConcurrentLinkedQueue<Object> m_paketuEile;
-	
-	/** The m_paketu skaitytojas. */
-	private PaketuSkaitytojas m_paketuSkaitytojas;
-	
-	/** The m_sasajos stebetojas. */
-	private volatile SasajosStebetojas m_sasajosStebetojas;
-	
-	/** The m_kanalo skaitytojas. */
-	private final KanaloSkaitytojas m_kanaloSkaitytojas;
-	
-	/** The m_kanalo rasytojas. */
-	private final KanaloRasytojas m_kanaloRasytojas;
+    /** The m_max eiles ilgis. */
+    private int m_maxEilesIlgis;
 
-	/**
-	 * Instantiates a new sasajos kanalo valdiklis.
-	 *
-	 * @param aptarnavimas the aptarnavimas
-	 * @param kanalas the kanalas
-	 * @param adresas the adresas
-	 */
-	public SasajosKanaloValdiklis(NIOAptarnavimas aptarnavimas, SelectableChannel kanalas, InetSocketAddress adresas) {
-		super(aptarnavimas, kanalas, adresas);
-		m_sasajosStebetojas = null;
-		m_maxEilesIlgis = -1;
-		m_sujungimoLaikas = -1;
-		m_paketuSkaitytojas = GrynasPaketuSkaitytojas.NUMATYTASIS;
-		m_baitaiEileje = new AtomicLong(0L);
-		m_paketuEile = new ConcurrentLinkedQueue<Object>();
-		m_kanaloSkaitytojas = new KanaloSkaitytojas(aptarnavimas);
-		m_kanaloRasytojas = new KanaloRasytojas();
-	}
+    /** Laikas kada buvo sukurta sąsaja. */
+    private long m_sujungimoLaikas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#rasyk(byte[])
-	 */
-	public boolean rasyk(byte[] paketas) {
-		return rasyk(paketas, null);
-	}
+    /** Baitų skaičius eilėje. */
+    private final AtomicLong m_baitaiEileje;
 
-	/**
-	 * Sujungtas.
-	 *
-	 * @return true, if successful
-	 */
-	public boolean sujungtas() {
-		return gaukKanala().isConnected();
-	}
+    /** Kanalo siunčiamų paketų eilė.*/
+    private ConcurrentLinkedQueue<Object> m_paketuEile;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#rasyk(byte[], java.lang.Object)
-	 */
-	public boolean rasyk(byte[] paketas, Object zyme) {
-		long dabartinisEilesIlgis = m_baitaiEileje.addAndGet(paketas.length);
-		if (m_maxEilesIlgis > 0 && dabartinisEilesIlgis > m_maxEilesIlgis) {
-			m_baitaiEileje.addAndGet(-paketas.length);
-			return false;
-		}
-		m_paketuEile.offer(zyme == null ? paketas : new Object[] { paketas, zyme });
-		gaukNIOAptarnavima().pridekIEile(new SusidomejimoPridejimas(SelectionKey.OP_WRITE));
-		return true;
-	}
+    private PaketuSkaitytojas m_paketuSkaitytojas;
+    private volatile SasajosStebetojas m_sasajosStebetojas;
+    private final KanaloSkaitytojas m_kanaloSkaitytojas;
+    private final KanaloRasytojas m_kanaloRasytojas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#pridekIEile(java.lang.Runnable)
-	 */
-	public void pridekIEile(Runnable r) {
-		m_paketuEile.offer(r);
-		gaukNIOAptarnavima().pridekIEile(new SusidomejimoPridejimas(SelectionKey.OP_WRITE));
-	}
+    /**
+     * Sukuriamas naujas sąsajos kanalo valdiklis.
+     *
+     * @param aptarnavimas -> NIOAptarnavimas objektas kuriame randamas kanalas.
+     * @param kanalas -> kanalas kurį reikės valdyti.
+     * @param adresas -> andresas iš kurio kanalas sukurtas.
+     */
+    public SasajosKanaloValdiklis(NIOAptarnavimas aptarnavimas, SelectableChannel kanalas, InetSocketAddress adresas) {
+        super(aptarnavimas, kanalas, adresas);
+        m_sasajosStebetojas = null;
+        m_maxEilesIlgis = -1;
+        m_sujungimoLaikas = -1;
+        m_paketuSkaitytojas = GrynasPaketuSkaitytojas.NUMATYTASIS;
+        m_baitaiEileje = new AtomicLong(0L);
+        m_paketuEile = new ConcurrentLinkedQueue<Object>();
+        m_kanaloSkaitytojas = new KanaloSkaitytojas(aptarnavimas);
+        m_kanaloRasytojas = new KanaloRasytojas();
+    }
 
-	/**
-	 * Ispek apie gauta paketa.
-	 *
-	 * @param paketas the paketas
-	 */
-	private void ispekApieGautaPaketa(byte[] paketas) {
-		try {
-			if (m_sasajosStebetojas != null) m_sasajosStebetojas.paketasGautas(this, paketas);
-		} catch (Exception e) {
-			gaukNIOAptarnavima().ispekApieIsimti(e);
-		}
-	}
+    public boolean rasyk(byte[] paketas) {
+        return rasyk(paketas, null);
+    }
 
-	/**
-	 * Ispek apie isiusta paketa.
-	 *
-	 * @param zyme the zyme
-	 */
-	private void ispekApieIsiustaPaketa(Object zyme) {
-		try {
-			if (m_sasajosStebetojas != null) m_sasajosStebetojas.paketasIssiustas(this, zyme);
-		} catch (Exception e) {
-			gaukNIOAptarnavima().ispekApieIsimti(e);
-		}
-	}
+    public boolean sujungtas() {
+        return gaukKanala().isConnected();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#paruostasSkaitymui()
-	 */
-	void paruostasSkaitymui() {
-		if (!atidarytas()) return;
-		//System.out.println("Pranesta kad galima skaityti iš " + gaukAdresa());
-		try {
-			if (!sujungtas()) throw new IOException("Kanalas n�ra sujungtas");
-			while (m_kanaloSkaitytojas.skaityk(gaukKanala()) > 0) {
-				byte[] paketas;
-				ByteBuffer buferis = m_kanaloSkaitytojas.gaukBuferi();
-				while (buferis.remaining() > 0 && (paketas = m_paketuSkaitytojas.kitasPaketas(buferis)) != null) {
-					if (paketas == PaketuSkaitytojas.PRALEISK_PAKETA) continue;
-					ispekApieGautaPaketa(paketas);
-				}
-				m_kanaloSkaitytojas.supakuok();
-			}
-		} catch (Exception e) {
-			issijunk(e);
-		}
-	}
+    /**
+     * Funkcija skirta rašyti į kanalą.
+     * Įdėjus paketą į siunčiamų paketų eilę, NIOAptarnavimas objektas
+     * įspėjamas, kad šis kanalas nori rašyti.
+     * @return true arba false priklausomai nuo to ar pavyko įrašyti į eilę.
+     */
+    public boolean rasyk(byte[] paketas, Object zyme) {
+        long dabartinisEilesIlgis = m_baitaiEileje.addAndGet(paketas.length);
+        if (m_maxEilesIlgis > 0 && dabartinisEilesIlgis > m_maxEilesIlgis) {
+            m_baitaiEileje.addAndGet(-paketas.length);
+            return false;
+        }
+        m_paketuEile.offer(zyme == null ? paketas : new Object[] { paketas, zyme });
+        gaukNIOAptarnavima().pridekIEile(new SusidomejimoPridejimas(SelectionKey.OP_WRITE));
+        return true;
+    }
 
-	/**
-	 * Uzpildyk siuntimu buferi.
-	 *
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	private void uzpildykSiuntimuBuferi() throws IOException {
-		if (m_kanaloRasytojas.tuscias()) {
-			Object kitasPaketas = m_paketuEile.poll();
-			while (kitasPaketas != null && kitasPaketas instanceof Runnable) {
-				((Runnable) kitasPaketas).run();
-				kitasPaketas = m_paketuEile.poll();
-			}
-			if (kitasPaketas == null) return;
-			byte[] duomenys;
-			Object zyme = null;
-			if (kitasPaketas instanceof byte[]) {
-				duomenys = (byte[]) kitasPaketas;
-			} else {
-				duomenys = (byte[]) ((Object[]) kitasPaketas)[0];
-				zyme = ((Object[]) kitasPaketas)[1];
-			}
-			m_kanaloRasytojas.pridekPaketa(duomenys, zyme);
-			m_baitaiEileje.addAndGet(-duomenys.length);
-		}
-	}
+    /**
+     * Veiksmas r pridedamas į įvykių eilę.
+     */
+    public void pridekIEile(Runnable r) {
+        m_paketuEile.offer(r);
+        gaukNIOAptarnavima().pridekIEile(new SusidomejimoPridejimas(SelectionKey.OP_WRITE));
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#paruostasRasymui()
-	 */
-	void paruostasRasymui() {
-		try {
-		//	System.out.println("Pranesta kad galima rašyti " + gaukAdresa());
-			panaikinkSusidomejima(SelectionKey.OP_WRITE);
-			if (!atidarytas()) return;
-			uzpildykSiuntimuBuferi();
-			if (m_kanaloRasytojas.tuscias()) return;
-			while (!m_kanaloRasytojas.tuscias()) {
-				boolean baitaiBuvoIrasyti = m_kanaloRasytojas.rasyk(gaukKanala());
-				if (!baitaiBuvoIrasyti) {
-					pridekSusidomejima(SelectionKey.OP_WRITE);
-					return;
-				}
-				if (m_kanaloRasytojas.tuscias()) {
-					ispekApieIsiustaPaketa(m_kanaloRasytojas.gaukZyme());
-					uzpildykSiuntimuBuferi();
-				}
-			}
-		} catch (Exception e) {
-			issijunk(e);
-		}
-	}
+    /**
+     * Metodas įspėja su sąsają susietą stebėtoją(NIOKlientas arba Vartotojas), kad gautas paketas.
+     *
+     * @param paketas -> gautas paketas baitais.
+     */
+    private void ispekApieGautaPaketa(byte[] paketas) {
+        try {
+            if (m_sasajosStebetojas != null) m_sasajosStebetojas.paketasGautas(this, paketas);
+        } catch (Exception e) {
+            gaukNIOAptarnavima().ispekApieIsimti(e);
+        }
+    }
 
+    /**
+     * Metodas įspėja su sąsają susietą stebėtoją(NIOKlientas arba Vartotojas), kad paketas išsiųstas.
+     *
+     * @param zyme -> išsiųsto paketo žymė.
+     */
+    private void ispekApieIsiustaPaketa(Object zyme) {
+        try {
+            if (m_sasajosStebetojas != null) m_sasajosStebetojas.paketasIssiustas(this, zyme);
+        } catch (Exception e) {
+            gaukNIOAptarnavima().ispekApieIsimti(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#paruostasSujungimui()
-	 */
-	void paruostasSujungimui() {
-		//System.out.println("Pranesta kad galima baigti sujungi su" + gaukAdresa());
-		try {
-			if (!atidarytas()) return;
-			if (gaukKanala().finishConnect()) {
-				panaikinkSusidomejima(SelectionKey.OP_CONNECT);
-				m_sujungimoLaikas = System.currentTimeMillis();
-				ispekStebetojaDelSujungimo();
-			}
-		} catch (Exception e) {
-			issijunk(e);
-		}
-	}
-	
-	/**
-	 * Ispek kad buvo atsauktas.
-	 */
-	public void ispekKadBuvoAtsauktas(){
-		uzdaryk();
-	}
+    /**
+     * Metodas apibrėžia kaip kanalo valdiklis turėtu elgtis jei su kanalu susietas
+     * raktas sukelia OP_READ įvyki.
+     */
+    void paruostasSkaitymui() {
+        if (!atidarytas()) return;
+        try {
+            if (!sujungtas()) throw new IOException("Kanalas nėra sujungtas");
+            while (m_kanaloSkaitytojas.skaityk(gaukKanala()) > 0) {
+                byte[] paketas;
+                ByteBuffer buferis = m_kanaloSkaitytojas.gaukBuferi();
+                while (buferis.remaining() > 0 && (paketas = m_paketuSkaitytojas.kitasPaketas(buferis)) != null) {
+                    if (paketas == PaketuSkaitytojas.PRALEISK_PAKETA) continue;
+                    ispekApieGautaPaketa(paketas);
+                }
+                m_kanaloSkaitytojas.supakuok();
+            }
+        } catch (Exception e) {
+            issijunk(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukNuskaitytuBaituSkaiciu()
-	 */
-	public long gaukNuskaitytuBaituSkaiciu() {
-		return m_kanaloSkaitytojas.gaukNuskaitytusBitus();
-	}
+    /**
+     * Metodas užpildo siuntimų buferį, kurį vėliau bus galima išsiųsti kai
+     * sąsaja praneš kad galima rašyti. T.y. bus sukeltas OP_WRITE įvykis.
+     *
+     * @throws IOException tipo iššimtis jei įvyksta klaida rašant.
+     */
+    private void uzpildykSiuntimuBuferi() throws IOException {
+        if (m_kanaloRasytojas.tuscias()) {
+            Object kitasPaketas = m_paketuEile.poll();
+            while (kitasPaketas != null && kitasPaketas instanceof Runnable) {
+                ((Runnable) kitasPaketas).run();
+                kitasPaketas = m_paketuEile.poll();
+            }
+            if (kitasPaketas == null) return;
+            byte[] duomenys;
+            Object zyme = null;
+            if (kitasPaketas instanceof byte[]) {
+                duomenys = (byte[]) kitasPaketas;
+            } else {
+                duomenys = (byte[]) ((Object[]) kitasPaketas)[0];
+                zyme = ((Object[]) kitasPaketas)[1];
+            }
+            m_kanaloRasytojas.pridekPaketa(duomenys, zyme);
+            m_baitaiEileje.addAndGet(-duomenys.length);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#gaukKanala()
-	 */
-	public SocketChannel gaukKanala() {
-		return (SocketChannel) super.gaukKanala();
-	}
+    /**
+     * Metodas apibrėžia kaip kanalo valdiklis turėtu elgtis jei su kanalu susietas
+     * raktas sukelia OP_WRITE įvyki.
+     */
+    void paruostasRasymui() {
+        try {
+            panaikinkSusidomejima(SelectionKey.OP_WRITE);
+            if (!atidarytas()) return;
+            uzpildykSiuntimuBuferi();
+            if (m_kanaloRasytojas.tuscias()) return;
+            while (!m_kanaloRasytojas.tuscias()) {
+                boolean baitaiBuvoIrasyti = m_kanaloRasytojas.rasyk(gaukKanala());
+                if (!baitaiBuvoIrasyti) {
+                    pridekSusidomejima(SelectionKey.OP_WRITE);
+                    return;
+                }
+                if (m_kanaloRasytojas.tuscias()) {
+                    ispekApieIsiustaPaketa(m_kanaloRasytojas.gaukZyme());
+                    uzpildykSiuntimuBuferi();
+                }
+            }
+        } catch (Exception e) {
+            issijunk(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukParasytuBaituSkaiciu()
-	 */
-	public long gaukParasytuBaituSkaiciu() {
-		return m_kanaloRasytojas.gaukKiekParasytaBaitu();
-	}
+    /**
+     *  Metodas apibrėžia kaip kanalo valdiklis turėtu elgtis jei su kanalu susietas
+     *  raktas sukelia OP_CONNECT įvyki.
+     *  T.y. kanalas kitame gale buvo sujungtas.
+     */
+    void paruostasSujungimui() {
+        try {
+            if (!atidarytas()) return;
+            if (gaukKanala().finishConnect()) {
+                panaikinkSusidomejima(SelectionKey.OP_CONNECT);
+                m_sujungimoLaikas = System.currentTimeMillis();
+                ispekStebetojaDelSujungimo();
+            }
+        } catch (Exception e) {
+            issijunk(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukLaikaNuoSujungimo()
-	 */
-	public long gaukLaikaNuoSujungimo() {
-		return m_sujungimoLaikas > 0 ? System.currentTimeMillis() - m_sujungimoLaikas : -1;
-	}
+    public void ispekKadBuvoAtsauktas() {
+        uzdaryk();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukRasymoEilesDydi()
-	 */
-	public long gaukRasymoEilesDydi() {
-		return m_baitaiEileje.get();
-	}
+    public long gaukNuskaitytuBaituSkaiciu() {
+        return m_kanaloSkaitytojas.gaukNuskaitytusBitus();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#toString()
-	 */
-	public String toString() {
-		try {
-			return gaukSasaja().toString();
-		} catch (Exception e) {
-			return "Uzdaryta NIO S�saja";
-		}
-	}
+    public SocketChannel gaukKanala() {
+        return (SocketChannel) super.gaukKanala();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukMaxEilesIlgi()
-	 */
-	public int gaukMaxEilesIlgi() {
-		return m_maxEilesIlgis;
-	}
+    public long gaukParasytuBaituSkaiciu() {
+        return m_kanaloRasytojas.gaukKiekParasytaBaitu();
+    }
 
-	/**
-	 * Ispek stebetoja del sujungimo.
-	 */
-	private void ispekStebetojaDelSujungimo() {
-		try {
-			if (m_sasajosStebetojas != null) m_sasajosStebetojas.rysysUztvirtintas(this);
-		} catch (Exception e) {
-			gaukNIOAptarnavima().ispekApieIsimti(e);
-		}
-	}
+    public long gaukLaikaNuoSujungimo() {
+        return m_sujungimoLaikas > 0 ? System.currentTimeMillis() - m_sujungimoLaikas : -1;
+    }
 
-	/**
-	 * Ispek stebetoja del atsijungimo.
-	 *
-	 * @param isimtis the isimtis
-	 */
-	private void ispekStebetojaDelAtsijungimo(Exception isimtis) {
-		try {
-			if (m_sasajosStebetojas != null) m_sasajosStebetojas.rysysNutrauktas(this, isimtis);
-		} catch (Exception e) {
-			gaukNIOAptarnavima().ispekApieIsimti(e);
-		}
-	}
+    public long gaukRasymoEilesDydi() {
+        return m_baitaiEileje.get();
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#nustatykMaxEilesIlgi(int)
-	 */
-	public void nustatykMaxEilesIlgi(int maxEilesIlgis) {
-		m_maxEilesIlgis = maxEilesIlgis;
-	}
+    public String toString() {
+        try {
+            return gaukSasaja().toString();
+        } catch (Exception e) {
+            return "Uzdaryta NIO Sąsaja";
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#nustatykPaketuSkaitytoja(com.menotyou.JC.NIOBiblioteka.Skaitytojai.PaketuSkaitytojas)
-	 */
-	public void nustatykPaketuSkaitytoja(PaketuSkaitytojas paketuSkaitytojas) {
-		m_paketuSkaitytojas = paketuSkaitytojas;
-	}
+    public int gaukMaxEilesIlgi() {
+        return m_maxEilesIlgis;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#nustatykPaketuRasytoja(com.menotyou.JC.NIOBiblioteka.Rasytojai.PaketuRasytojas)
-	 */
-	public void nustatykPaketuRasytoja(final PaketuRasytojas paketuRasytojas) {
-		if (paketuRasytojas == null) throw new NullPointerException();
-		pridekIEile(new Runnable() {
-			public void run() {
-				m_kanaloRasytojas.nustatykPaketuRasytoja(paketuRasytojas);
-			}
-		});
-	}
+    /**
+     * Metodas įspėja sąsajos stebėtoją(NIOKlientas arba Vartotojas), kad su serveriu ar klientu
+     * buvo susisiekta ir ryšys užtvirtintas.
+     */
+    private void ispekStebetojaDelSujungimo() {
+        try {
+            if (m_sasajosStebetojas != null) m_sasajosStebetojas.rysysUztvirtintas(this);
+        } catch (Exception e) {
+            gaukNIOAptarnavima().ispekApieIsimti(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#stebek(com.menotyou.JC.NIOBiblioteka.SasajosStebetojas)
-	 */
-	public void stebek(SasajosStebetojas stebetojas) {
-	//	System.out.println("Pradedama stebeti.");
-		pazymekKadStebetojasPriskirtas();
-	//	System.out.println("Pridedama i eile StebejimoPradziosIvykis");
-	//	System.out.println("Stebetojas == null: " + stebetojas == null);
-		gaukNIOAptarnavima().pridekIEile(new StebejimoPradziosIvykis(this, stebetojas == null ? SasajosStebetojas.NULL : stebetojas));
-	}
+    /**
+     * Metodas įspėja sąsajos stebėtoją(NIOKlientas arba Vartotojas), kad ryšys serveriu ar klientu
+     * buvo nutrauktas.
+     * @param isimtis -> išimtis dėl kurios įvyko nutraukimas.
+     */
+    private void ispekStebetojaDelAtsijungimo(Exception isimtis) {
+        try {
+            if (m_sasajosStebetojas != null) m_sasajosStebetojas.rysysNutrauktas(this, isimtis);
+        } catch (Exception e) {
+            gaukNIOAptarnavima().ispekApieIsimti(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#uzsidarykPoRasymo()
-	 */
-	public void uzsidarykPoRasymo() {
-		pridekIEile(new Runnable() {
-			public void run() {
-				m_paketuEile.clear();
-				issijunk(null);
-			}
-		});
-	}
+    public void nustatykMaxEilesIlgi(int maxEilesIlgis) {
+        m_maxEilesIlgis = maxEilesIlgis;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOSasaja#gaukSasaja()
-	 */
-	public Socket gaukSasaja() {
-		return gaukKanala().socket();
-	}
+    public void nustatykPaketuSkaitytoja(PaketuSkaitytojas paketuSkaitytojas) {
+        m_paketuSkaitytojas = paketuSkaitytojas;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#raktasPriskirtas()
-	 */
-	void raktasPriskirtas() {
-		if (!sujungtas()) {
-			pridekSusidomejima(SelectionKey.OP_CONNECT);
-		}
-	}
+    public void nustatykPaketuRasytoja(final PaketuRasytojas paketuRasytojas) {
+        if (paketuRasytojas == null) throw new NullPointerException();
+        pridekIEile(new Runnable() {
+            public void run() {
+                m_kanaloRasytojas.nustatykPaketuRasytoja(paketuRasytojas);
+            }
+        });
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#issijunk(java.lang.Exception)
-	 */
-	protected void issijunk(Exception e) {
-		m_sujungimoLaikas = -1;
-		m_paketuEile.clear();
-		m_baitaiEileje.set(0);
-		ispekStebetojaDelAtsijungimo(e);
-	}
+    /**
+     * Metodas priskiria sasajos kanalui stebėtoją.
+     */
+    public void stebek(SasajosStebetojas stebetojas) {
+        pazymekKadStebetojasPriskirtas();
+        gaukNIOAptarnavima().pridekIEile(new StebejimoPradziosIvykis(this, stebetojas));
+    }
 
-	/**
-	 * The Class SusidomejimoPridejimas.
-	 */
-	private class SusidomejimoPridejimas implements Runnable {
-		
-		/** The m_susidomejimas. */
-		private final int m_susidomejimas;
+    /**
+     * Metodas skirtas uždaryti sąsają po to kai bus baigta į ją rašyti.
+     */
+    public void uzsidarykPoRasymo() {
+        pridekIEile(new Runnable() {
+            public void run() {
+                m_paketuEile.clear();
+                issijunk(null);
+            }
+        });
+    }
 
-		/**
-		 * Instantiates a new susidomejimo pridejimas.
-		 *
-		 * @param susidomejimas the susidomejimas
-		 */
-		private SusidomejimoPridejimas(int susidomejimas) {
-			m_susidomejimas = susidomejimas;
-		}
+    public Socket gaukSasaja() {
+        return gaukKanala().socket();
+    }
 
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run() {
-			pridekSusidomejima(m_susidomejimas);
-		}
-	}
+    void raktasPriskirtas() {
+        if (!sujungtas()) {
+            pridekSusidomejima(SelectionKey.OP_CONNECT);
+        }
+    }
 
-	/**
-	 * The Class StebejimoPradziosIvykis.
-	 */
-	private class StebejimoPradziosIvykis implements Runnable {
-		
-		/** The m_naujas stebetojas. */
-		private final SasajosStebetojas m_naujasStebetojas;
-		
-		/** The m_valdiklis. */
-		private final SasajosKanaloValdiklis m_valdiklis;
+    /**
+     * Metodas išjungia sąsajos kanalo valdiklį ir įspėja dėl atsijungimo.
+     */
+    protected void issijunk(Exception e) {
+        m_sujungimoLaikas = -1;
+        m_paketuEile.clear();
+        m_baitaiEileje.set(0);
+        ispekStebetojaDelAtsijungimo(e);
+    }
 
-		/**
-		 * Instantiates a new stebejimo pradzios ivykis.
-		 *
-		 * @param valdiklis the valdiklis
-		 * @param stebetojas the stebetojas
-		 */
-		private StebejimoPradziosIvykis(SasajosKanaloValdiklis valdiklis, SasajosStebetojas stebetojas) {
-			m_valdiklis = valdiklis;
-			m_naujasStebetojas = stebetojas;
-		}
+    /**
+     * Klasė/įvykis, kurio pagalba kanalui pridedamas kokios nors operacijos susidomėjimas,
+     * tai daroma per įvykį tam kad išvengti susidomėjimo pakeitimo viduryje operacijos.
+     */
+    private class SusidomejimoPridejimas implements Runnable {
 
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run() {
-	//		System.out.println("Pradedamas stebeti klientas " + m_valdiklis.gaukAdresa());
-			m_valdiklis.m_sasajosStebetojas = m_naujasStebetojas;
-			if (m_valdiklis.sujungtas()) {
-	//			System.out.println("Rysys sujungtas!");
-				m_valdiklis.ispekStebetojaDelSujungimo();
-			}
-			if (!m_valdiklis.atidarytas()) {
-	//			System.out.println("Valdiklis neatidarytas - uždaroma...");
-				m_valdiklis.ispekStebetojaDelAtsijungimo(null);
-			}
-	//		System.out.println("Pridedamas OP_READ susidomejimas.");
-			m_valdiklis.pridekSusidomejima(SelectionKey.OP_READ);
-		}
+        private final int m_susidomejimas;
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString() {
-			return "Pradedama stebeti [" + m_naujasStebetojas + "]";
-		}
-	}
+        private SusidomejimoPridejimas(int susidomejimas) {
+            m_susidomejimas = susidomejimas;
+        }
+
+        public void run() {
+            pridekSusidomejima(m_susidomejimas);
+        }
+    }
+
+    /**
+     * Klasė/įvykis iškviečiamas kai reikia kanalui priskirti stebėtoją ir 
+     * pranešti kad nurodytu kanalu galima laukti įvesties, t.y. OP_READ įvykių.
+     */
+    private class StebejimoPradziosIvykis implements Runnable {
+
+        private final SasajosStebetojas m_naujasStebetojas;
+        private final SasajosKanaloValdiklis m_valdiklis;
+
+        private StebejimoPradziosIvykis(SasajosKanaloValdiklis valdiklis, SasajosStebetojas stebetojas) {
+            m_valdiklis = valdiklis;
+            m_naujasStebetojas = stebetojas;
+        }
+
+        public void run() {
+            m_valdiklis.m_sasajosStebetojas = m_naujasStebetojas;
+            if (m_valdiklis.sujungtas()) {
+                m_valdiklis.ispekStebetojaDelSujungimo();
+            }
+            if (!m_valdiklis.atidarytas()) {
+                m_valdiklis.ispekStebetojaDelAtsijungimo(null);
+            }
+            m_valdiklis.pridekSusidomejima(SelectionKey.OP_READ);
+        }
+
+        public String toString() {
+            return "Pradedama stebeti [" + m_naujasStebetojas + "]";
+        }
+    }
 
 }

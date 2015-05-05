@@ -8,233 +8,185 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ServerioSasajosKanaloValdiklis.
+ * Ši klasė yra skirta valdyti serverio sąsają.
  */
 public class ServerioSasajosKanaloValdiklis extends KanaloValdiklis implements NIOServerioSasaja {
 
-	/** The m_is viso atmesta prisijungimu. */
-	private long m_isVisoAtmestaPrisijungimu;
-	
-	/** The m_is viso priimta prisijungimu. */
-	private long m_isVisoPriimtaPrisijungimu;
-	
-	/** The m_is viso nepavykusiu prisijungimu. */
-	private long m_isVisoNepavykusiuPrisijungimu;
-	
-	/** The m_is viso prisijungimu. */
-	private long m_isVisoPrisijungimu;
-	
-	/** The m_prisijungimu filtras. */
-	private volatile PrisijungimuFiltras m_prisijungimuFiltras;
-	
-	/** The m_stebetojas. */
-	private ServerioSasajosStebetojas m_stebetojas;
+    private long m_isVisoAtmestaPrisijungimu;
+    private long m_isVisoPriimtaPrisijungimu;
+    private long m_isVisoNepavykusiuPrisijungimu;
+    private long m_isVisoPrisijungimu;
 
-	/**
-	 * Instantiates a new serverio sasajos kanalo valdiklis.
-	 *
-	 * @param aptarnavimas the aptarnavimas
-	 * @param kanalas the kanalas
-	 * @param adresas the adresas
-	 */
-	protected ServerioSasajosKanaloValdiklis(NIOAptarnavimas aptarnavimas, SelectableChannel kanalas, InetSocketAddress adresas) {
-		super(aptarnavimas, kanalas, adresas);
-		m_stebetojas = null;
-		nustatykPrisijungimuFiltra(PrisijungimuFiltras.LEISK_VISUS);
-		m_isVisoAtmestaPrisijungimu = 0;
-		m_isVisoPriimtaPrisijungimu = 0;
-		m_isVisoNepavykusiuPrisijungimu = 0;
-		m_isVisoPrisijungimu = 0;
-	}
+    private volatile PrisijungimuFiltras m_prisijungimuFiltras;
+    private ServerioSasajosStebetojas m_stebetojas;
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja#gaukVisuSujungimuSkaiciu()
-	 */
-	public long gaukVisuSujungimuSkaiciu() {
-		return m_isVisoPrisijungimu;
-	}
+    /**
+     * Sukuriamas naujas sąsajos kanalo valdiklis.
+     *
+     * @param aptarnavimas -> NIOAptarnavimas objektas kuriame yra kanalas.
+     * @param kanalas -> kanalas, kurio sąsają ši klasė valdys.
+     * @param adresas -> adresas iš kuruo kanala sukurtas.
+     */
+    protected ServerioSasajosKanaloValdiklis(NIOAptarnavimas aptarnavimas, SelectableChannel kanalas, InetSocketAddress adresas) {
+        super(aptarnavimas, kanalas, adresas);
+        m_stebetojas = null;
+        nustatykPrisijungimuFiltra(PrisijungimuFiltras.LEISK_VISUS);
+        m_isVisoAtmestaPrisijungimu = 0;
+        m_isVisoPriimtaPrisijungimu = 0;
+        m_isVisoNepavykusiuPrisijungimu = 0;
+        m_isVisoPrisijungimu = 0;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja#gaukVisuAtmestuSujungimuSkaiciu()
-	 */
-	public long gaukVisuAtmestuSujungimuSkaiciu() {
-		return m_isVisoAtmestaPrisijungimu;
-	}
+    public long gaukVisuSujungimuSkaiciu() {
+        return m_isVisoPrisijungimu;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja#gaukVisuPriimtuSujungimuSkaiciu()
-	 */
-	public long gaukVisuPriimtuSujungimuSkaiciu() {
-		return m_isVisoPriimtaPrisijungimu;
-	}
+    public long gaukVisuAtmestuSujungimuSkaiciu() {
+        return m_isVisoAtmestaPrisijungimu;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja#gaukVisuNepavykusiuSujungimuSkaiciu()
-	 */
-	public long gaukVisuNepavykusiuSujungimuSkaiciu() {
-		return m_isVisoNepavykusiuPrisijungimu;
-	}
+    public long gaukVisuPriimtuSujungimuSkaiciu() {
+        return m_isVisoPriimtaPrisijungimu;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja#stebek(com.menotyou.JC.NIOBiblioteka.ServerioSasajosStebetojas)
-	 */
-	public void stebek(ServerioSasajosStebetojas stebetojas) {
-		if (stebetojas == null) throw new NullPointerException();
-		pazymekKadStebetojasPriskirtas();
-		gaukNIOAptarnavima().pridekIEile(new StebejimoPradziosIvykis(stebetojas));
-	}
+    public long gaukVisuNepavykusiuSujungimuSkaiciu() {
+        return m_isVisoNepavykusiuPrisijungimu;
+    }
 
-	/**
-	 * Ispek apie nauja rysi.
-	 *
-	 * @param sasaja the sasaja
-	 */
-	private void ispekApieNaujaRysi(NIOSasaja sasaja) {
-		try {
-			if (m_stebetojas != null) m_stebetojas.naujasSujungimas(sasaja);
-		} catch (Exception e) {
-			gaukNIOAptarnavima().ispekApieIsimti(e);
-			sasaja.uzdaryk();
-		}
-	}
+    /**
+     * Metodas priskiria stebėjoją serverio sąsajai.
+     */
+    public void stebek(ServerioSasajosStebetojas stebetojas) {
+        if (stebetojas == null) throw new NullPointerException();
+        pazymekKadStebetojasPriskirtas();
+        gaukNIOAptarnavima().pridekIEile(new StebejimoPradziosIvykis(stebetojas));
+    }
 
-	/**
-	 * Ispek apie nepavkusi sujungima.
-	 *
-	 * @param isimtis the isimtis
-	 */
-	private void ispekApieNepavkusiSujungima(IOException isimtis) {
-		try {
-			if (m_stebetojas != null) m_stebetojas.priemimasNepavyko(isimtis);
-		} catch (Exception e) {
-			gaukNIOAptarnavima().ispekApieIsimti(e);
-		}
-	}
+    /**
+     * Metodas įspėja stebėtoją, kad buvo aptiktas naujas ryšys.
+     *
+     * @param sasaja -> sąsaja su kuria buvo užmegstas naujas ryšys.
+     */
+    private void ispekApieNaujaRysi(NIOSasaja sasaja) {
+        try {
+            if (m_stebetojas != null) m_stebetojas.naujasSujungimas(sasaja);
+        } catch (Exception e) {
+            gaukNIOAptarnavima().ispekApieIsimti(e);
+            sasaja.uzdaryk();
+        }
+    }
 
-	/**
-	 * Ispek stebetoja kad sasaja mire.
-	 *
-	 * @param isimtis the isimtis
-	 */
-	private void ispekStebetojaKadSasajaMire(Exception isimtis) {
-		try {
-			if (m_stebetojas != null) m_stebetojas.serverioSasajaMire(isimtis);
-		} catch (Exception e) {
-			gaukNIOAptarnavima().ispekApieIsimti(e);
-		}
-	}
+    /**
+     * Metodas įspėja stebėtoją, kad nepavyko sujungimas.
+     *
+     * @param isimtis -> išimtis dėl kurios nepavyko sujungimas.
+     */
+    private void ispekApieNepavkusiSujungima(IOException isimtis) {
+        try {
+            if (m_stebetojas != null) m_stebetojas.priemimasNepavyko(isimtis);
+        } catch (Exception e) {
+            gaukNIOAptarnavima().ispekApieIsimti(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#paruostasPriemimui()
-	 */
-	void paruostasPriemimui() {
-		m_isVisoPrisijungimu++;
-		SocketChannel kanalas = null;
-		try {
-			kanalas = gaukKanala().accept();
-			if (kanalas == null) {
-				m_isVisoPrisijungimu--;
-				return;
-			}
-			InetSocketAddress adresas = (InetSocketAddress) kanalas.socket().getRemoteSocketAddress();
-			if (!m_prisijungimuFiltras.priimkPrisijungima(adresas)) {
-				m_isVisoAtmestaPrisijungimu++;
-				NIOIrankiai.tyliaiUzdarykKanala(kanalas);
-				return;
-			}
-			ispekApieNaujaRysi(registruokSasaja(kanalas, adresas));
-			m_isVisoPrisijungimu++;
-		} catch (IOException e) {
-			NIOIrankiai.tyliaiUzdarykKanala(kanalas);
-			m_isVisoNepavykusiuPrisijungimu++;
-			ispekApieNepavkusiSujungima(e);
-		}
-	}
+    /**
+     * Metodas įspėja stebėtoją, kad sąsaja mirė.
+     *
+     * @param isimtis -> Išimtis dėl kurio sąsaja mirė.
+     */
+    private void ispekStebetojaKadSasajaMire(Exception isimtis) {
+        try {
+            if (m_stebetojas != null) m_stebetojas.serverioSasajaMire(isimtis);
+        } catch (Exception e) {
+            gaukNIOAptarnavima().ispekApieIsimti(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#gaukKanala()
-	 */
-	public ServerSocketChannel gaukKanala() {
-		return (ServerSocketChannel) super.gaukKanala();
-	}
+    /**
+     * Metodas apibrėžia kaip kanalo valdiklis turėtu elgtis jei su kanalu susietas
+     * raktas sukelia OP_ACCEPT įvyki.
+     */
+    void paruostasPriemimui() {
+        m_isVisoPrisijungimu++;
+        SocketChannel kanalas = null;
+        try {
+            kanalas = gaukKanala().accept();
+            if (kanalas == null) {
+                m_isVisoPrisijungimu--;
+                return;
+            }
+            InetSocketAddress adresas = (InetSocketAddress) kanalas.socket().getRemoteSocketAddress();
+            if (!m_prisijungimuFiltras.priimkPrisijungima(adresas)) {
+                m_isVisoAtmestaPrisijungimu++;
+                NIOIrankiai.tyliaiUzdarykKanala(kanalas);
+                return;
+            }
+            ispekApieNaujaRysi(registruokSasaja(kanalas, adresas));
+            m_isVisoPrisijungimu++;
+        } catch (IOException e) {
+            NIOIrankiai.tyliaiUzdarykKanala(kanalas);
+            m_isVisoNepavykusiuPrisijungimu++;
+            ispekApieNepavkusiSujungima(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#raktasPriskirtas()
-	 */
-	void raktasPriskirtas() {
-		pridekSusidomejima(SelectionKey.OP_ACCEPT);
-	}
+    public ServerSocketChannel gaukKanala() {
+        return (ServerSocketChannel) super.gaukKanala();
+    }
 
-	/**
-	 * Registruok sasaja.
-	 *
-	 * @param kanalas the kanalas
-	 * @param adresas the adresas
-	 * @return the NIO sasaja
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	NIOSasaja registruokSasaja(SocketChannel kanalas, InetSocketAddress adresas) throws IOException {
-		return gaukNIOAptarnavima().registruokSasajosKanala(kanalas, adresas);
-	}
+    void raktasPriskirtas() {
+        pridekSusidomejima(SelectionKey.OP_ACCEPT);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.KanaloValdiklis#issijunk(java.lang.Exception)
-	 */
-	protected void issijunk(Exception e) {
-		ispekStebetojaKadSasajaMire(e);
-	}
+    /**
+     * Funkcija iš NIOAptarnavimas objekto užregistruoja naują sąsają.
+     * 
+     * @param kanalas -> kanalas su kurio bus susieta sąsaja.
+     * @param adresas -> kanalo adresas.
+     * @return NIOSasaja objektas.
+     * @throws IOException tipo iššimtis, kuri išmetama jei įvyksta klaida kuriant sąsają.
+     */
+    NIOSasaja registruokSasaja(SocketChannel kanalas, InetSocketAddress adresas) throws IOException {
+        return gaukNIOAptarnavima().registruokSasajosKanala(kanalas, adresas);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja#nustatykPrisijungimuFiltra(com.menotyou.JC.NIOBiblioteka.PrisijungimuFiltras)
-	 */
-	public void nustatykPrisijungimuFiltra(PrisijungimuFiltras filtras) {
-		m_prisijungimuFiltras =filtras == null ? PrisijungimuFiltras.ATMESK_VISUS : filtras;
-	}
+    protected void issijunk(Exception e) {
+        ispekStebetojaKadSasajaMire(e);
+    }
 
-	/**
-	 * The Class StebejimoPradziosIvykis.
-	 */
-	private class StebejimoPradziosIvykis implements Runnable {
-		
-		/** The m_naujas stebetojas. */
-		private final ServerioSasajosStebetojas m_naujasStebetojas;
+    public void nustatykPrisijungimuFiltra(PrisijungimuFiltras filtras) {
+        m_prisijungimuFiltras = (filtras == null ? PrisijungimuFiltras.ATMESK_VISUS : filtras);
+    }
 
-		/**
-		 * Instantiates a new stebejimo pradzios ivykis.
-		 *
-		 * @param stebetojas the stebetojas
-		 */
-		private StebejimoPradziosIvykis(ServerioSasajosStebetojas stebetojas) {
-			m_naujasStebetojas = stebetojas;
-		}
+    /**
+     * Klasė/įvykis iškviečiamas kai reikia kanalui priskirti stebėtoją ir 
+     * pranešti kad nurodytu kanalu galima laukti prisijungimų, t.y. OP_ACCEPT įvykių.
+     */
+    private class StebejimoPradziosIvykis implements Runnable {
 
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run() {
-			m_stebetojas = m_naujasStebetojas;
-			if (!atidarytas()) {
-				ispekStebetojaKadSasajaMire(null);
-				return;
-			}
-			pridekSusidomejima(SelectionKey.OP_ACCEPT);
-		}
+        private final ServerioSasajosStebetojas m_naujasStebetojas;
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString() {
-			return "Pradedama stebeti [" + m_naujasStebetojas + "]";
-		}
-	}
+        private StebejimoPradziosIvykis(ServerioSasajosStebetojas stebetojas) {
+            m_naujasStebetojas = stebetojas;
+        }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.NIOServerioSasaja#gaukSasaja()
-	 */
-	public ServerSocket gaukSasaja() {
-		return gaukKanala().socket();
-	}
+        public void run() {
+            m_stebetojas = m_naujasStebetojas;
+            if (!atidarytas()) {
+                ispekStebetojaKadSasajaMire(null);
+                return;
+            }
+            pridekSusidomejima(SelectionKey.OP_ACCEPT);
+        }
+
+        public String toString() {
+            return "Pradedama stebeti [" + m_naujasStebetojas + "]";
+        }
+    }
+
+    public ServerSocket gaukSasaja() {
+        return gaukKanala().socket();
+    }
 
 }

@@ -2,32 +2,24 @@ package com.menotyou.JC.NIOBiblioteka;
 
 import java.net.InetSocketAddress;
 
-
-// TODO: Auto-generated Javadoc
 /**
- * The Interface PrisijungimuFiltras.
+ * Valdilis(interface) kuris turėtų veikit kaip filtras prisijugiantiems vartotojams.
+ * Čia galima apibrėžti iš kokių ip klientų nepriimti.
+ * Šiuo metu klientai arba įleidžaimi arba ne.
  */
 public interface PrisijungimuFiltras {
-	
-	/** The atmesk visus. */
-	PrisijungimuFiltras ATMESK_VISUS = new PrisijungimuFiltras(){
-		public boolean priimkPrisijungima(InetSocketAddress adresas){
-			return false;
-		}
-	};
-	
-	/** The leisk visus. */
-	PrisijungimuFiltras LEISK_VISUS = new PrisijungimuFiltras(){
-		public boolean priimkPrisijungima(InetSocketAddress adresas){
-			return true;
-		}
-	};
-	
-	/**
-	 * Priimk prisijungima.
-	 *
-	 * @param adresas the adresas
-	 * @return true, if successful
-	 */
-	public boolean priimkPrisijungima(InetSocketAddress adresas);
+
+    PrisijungimuFiltras ATMESK_VISUS = new PrisijungimuFiltras() {
+        public boolean priimkPrisijungima(InetSocketAddress adresas) {
+            return false;
+        }
+    };
+
+    PrisijungimuFiltras LEISK_VISUS = new PrisijungimuFiltras() {
+        public boolean priimkPrisijungima(InetSocketAddress adresas) {
+            return true;
+        }
+    };
+
+    public boolean priimkPrisijungima(InetSocketAddress adresas);
 }

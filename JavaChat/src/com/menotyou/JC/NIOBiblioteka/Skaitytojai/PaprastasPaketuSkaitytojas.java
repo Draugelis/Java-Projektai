@@ -5,45 +5,43 @@ import java.nio.ByteBuffer;
 import com.menotyou.JC.NIOBiblioteka.NIOIrankiai;
 import com.menotyou.JC.NIOBiblioteka.ProtokoloPazeidimoIsimtis;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class PaprastasPaketuSkaitytojas.
+ * Paketų skaitytojas kuris yra naudojamas šioje programoje. Jis naudoja
+ * paketų antraštes tam, kad žinotų kokio ilgio paketą turi nuskaityti.
  */
 public class PaprastasPaketuSkaitytojas implements PaketuSkaitytojas {
 
-	/** The m_big endian. */
-	private final boolean m_bigEndian;
-	
-	/** The m_antrastes dydis. */
-	private final int m_antrastesDydis;
+    private final boolean m_bigEndian;
+    private final int m_antrastesDydis;
 
-	/**
-	 * Instantiates a new paprastas paketu skaitytojas.
-	 *
-	 * @param antrastesDydis the antrastes dydis
-	 * @param bigEndian the big endian
-	 */
-	public PaprastasPaketuSkaitytojas(int antrastesDydis, boolean bigEndian) {
-		if (antrastesDydis < 1 || antrastesDydis > 4) throw new IllegalStateException("Antrast�s dydis turi b�ti tarp 1 ir 4, o dabar:" + antrastesDydis);
-		m_bigEndian = bigEndian;
-		m_antrastesDydis = antrastesDydis;
-	}
+    /**
+     * Sukuramas naujas paketų skaitytojas.
+     *
+     * @param antrastesDydis -> antraštes dydis
+     * @param bigEndian -> kintamasis nurodantis kokio formatu sistemoje koduojami baitai.
+     */
+    public PaprastasPaketuSkaitytojas(int antrastesDydis, boolean bigEndian) {
+        if (antrastesDydis < 1 || antrastesDydis > 4) throw new IllegalStateException("Antrastšs dydis turi būti tarp 1 ir 4, o dabar:" + antrastesDydis);
+        m_bigEndian = bigEndian;
+        m_antrastesDydis = antrastesDydis;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.menotyou.JC.NIOBiblioteka.Skaitytojai.PaketuSkaitytojas#kitasPaketas(java.nio.ByteBuffer)
-	 */
-	public byte[] kitasPaketas(ByteBuffer buferis) throws ProtokoloPazeidimoIsimtis {
-		if (buferis.remaining() < m_antrastesDydis) return null;
-		buferis.mark();
-		int ilgis = NIOIrankiai.gaukPaketoDydiBuferyje(buferis, m_antrastesDydis, m_bigEndian);
-		if (buferis.remaining() >= ilgis) {
-			byte[] paketas = new byte[ilgis];
-			buferis.get(paketas);
-			return paketas;
-		} else {
-			buferis.reset();
-			return null;
-		}
-	}
+    /**
+     * Funkcija tikrina ar buferyje saugomo paketo ilgis atitinka, antraštėje nurodytą ilgį,
+     * jei taip buferis paimamas, jei ne gražinamas null.
+     */
+    public byte[] kitasPaketas(ByteBuffer buferis) throws ProtokoloPazeidimoIsimtis {
+        if (buferis.remaining() < m_antrastesDydis) return null;
+        buferis.mark();
+        int ilgis = NIOIrankiai.gaukPaketoDydiBuferyje(buferis, m_antrastesDydis, m_bigEndian);
+        if (buferis.remaining() >= ilgis) {
+            byte[] paketas = new byte[ilgis];
+            buferis.get(paketas);
+            return paketas;
+        } else {
+            buferis.reset();
+            return null;
+        }
+    }
 
 }

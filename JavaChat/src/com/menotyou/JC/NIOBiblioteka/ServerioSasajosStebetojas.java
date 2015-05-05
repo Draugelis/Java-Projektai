@@ -2,31 +2,16 @@ package com.menotyou.JC.NIOBiblioteka;
 
 import java.io.IOException;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface ServerioSasajosStebetojas.
+ * Valdiklis(interface) kuriame apibrėžtos visos
+ * serverio sąsajos stebėtojui reikalingos funkcijos.
  */
 public interface ServerioSasajosStebetojas {
-	
-	/**
-	 * Priemimas nepavyko.
-	 *
-	 * @param isimtis the isimtis
-	 */
-	void priemimasNepavyko(IOException isimtis);
-	
-	/**
-	 * Serverio sasaja mire.
-	 *
-	 * @param isimtis the isimtis
-	 */
-	void serverioSasajaMire(Exception isimtis);
-	
-	/**
-	 * Naujas sujungimas.
-	 *
-	 * @param soketas the soketas
-	 */
-	void naujasSujungimas(NIOSasaja soketas);
+
+    void priemimasNepavyko(IOException isimtis);
+
+    void serverioSasajaMire(Exception isimtis);
+
+    void naujasSujungimas(NIOSasaja soketas);
 
 }

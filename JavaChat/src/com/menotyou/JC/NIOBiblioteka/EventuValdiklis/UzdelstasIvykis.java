@@ -1,27 +1,14 @@
 package com.menotyou.JC.NIOBiblioteka.EventuValdiklis;
-// TODO: Auto-generated Javadoc
 
 /**
- * The Interface UzdelstasIvykis.
+ * Paprastas interfeisas kurio gali naudotis UždelstasVeiksmas.
+ * Jame aprašomi tik funkicijų pavadinimai.
  */
 public interface UzdelstasIvykis {
 
-	/**
-	 * Atsaukti.
-	 */
-	void atsaukti();
-	
-	/**
-	 * Gauk iskvietima.
-	 *
-	 * @return the runnable
-	 */
-	Runnable gaukIskvietima();
-	
-	/**
-	 * Gauk laika.
-	 *
-	 * @return the long
-	 */
-	long gaukLaika();
+    void atsaukti();
+
+    Runnable gaukIskvietima();
+
+    long gaukLaika();
 }
